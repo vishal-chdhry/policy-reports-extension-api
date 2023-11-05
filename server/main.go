@@ -9,14 +9,13 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/go-logr/zapr"
 	"github.com/gorilla/mux"
 	"github.com/kyverno/pkg/certmanager"
 	tlsMgr "github.com/kyverno/pkg/tls"
-	"github.com/vishal-chdhry/policy-reports-extension-api/server/db/kine"
+	"github.com/vishal-chdhry/policy-reports-extension-api/server/db/inmemory"
 	"github.com/vishal-chdhry/policy-reports-extension-api/server/pkg/common"
 	"github.com/vishal-chdhry/policy-reports-extension-api/server/pkg/handlers"
 	"go.uber.org/zap"
@@ -42,8 +41,8 @@ var (
 func main() {
 	ctx := context.Background()
 
-	var endpointStr string
-	flag.StringVar(&endpointStr, "dbEndpoints", "", "Endpoints of the database.")
+	var endpoints string
+	flag.StringVar(&endpoints, "dbEndpoints", "", "Endpoints of the database.")
 
 	var dbCAFile string
 	flag.StringVar(&dbCAFile, "dbCAFile", "", "Ca file location of the database.")
@@ -62,11 +61,6 @@ func main() {
 
 	flag.Parse()
 
-	endpoints := make([]string, 0)
-	if len(endpointStr) > 0 {
-		endpoints = strings.Split(endpointStr, ",")
-	}
-
 	zc := zap.NewDevelopmentConfig()
 	zc.Level = zap.NewAtomicLevelAt(zapcore.Level(-2))
 	logger, err := zc.Build()
@@ -74,7 +68,7 @@ func main() {
 		log.Fatalf("failed to initialize logger: %v", err)
 	}
 	logger = logger.WithOptions(zap.AddStacktrace(zap.DPanicLevel))
-	// slog := logger.Sugar()
+	slog := logger.Sugar()
 
 	config, err := rest.InClusterConfig()
 	if err != nil {
@@ -120,17 +114,18 @@ func main() {
 		certManager.Run(ctx, 1)
 	}()
 
-	kineClient, err := kine.New(
-		kine.WithCAFile(dbCAFile),
-		kine.WithCertFile(dbCertFile),
-		kine.WithKeyFile(dbKeyFile),
-		kine.WithEndpoints(endpoints),
-	)
+	// kineClient, err := kine.New(
+	// 	kine.WithCAFile(dbCAFile),
+	// 	kine.WithCertFile(dbCertFile),
+	// 	kine.WithKeyFile(dbKeyFile),
+	// 	kine.WithEndpoints(strings.Split(endpoints, ",")),
+	// )
+	// if err != nil {
+	// 	log.Fatalf("failed to initialize kineclient: %v", err)
+	// }
 
-	handlerSet := handlers.NewHandlerSet(kineClient)
-	if err != nil {
-		log.Fatalf("failed to initialize kineclient: %v", err)
-	}
+	inMemoryDb := inmemory.New(slog)
+	handlerSet := handlers.NewHandlerSet(inMemoryDb)
 
 	mux := mux.NewRouter()
 	mux.HandleFunc(fmt.Sprintf("/apis/%s", common.GroupVersion), handlers.TestHandler)
