@@ -1,0 +1,146 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: policy-reports-aggregation
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: policy-reports-aggregation-cluster-role
+rules:
+- apiGroups:
+  - "*"
+  resources:
+  - "*"
+  verbs:
+  - get
+  - list
+  - create
+  - watch
+  - delete
+  - deletecollection
+  - patch
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: policy-reports-aggregation-cluster-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: policy-reports-aggregation-cluster-role
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: policy-reports-aggregation
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: policy-reports-aggregation-role
+  namespace: policy-reports-aggregation
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - "secrets"
+  - "configmaps"
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - delete
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: policy-reports-aggregation-rolebinding
+  namespace: policy-reports-aggregation
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: policy-reports-aggregation-role
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: policy-reports-aggregation
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: policy-reports-aggregation-server
+  name: policy-reports-aggregation-server
+  namespace: policy-reports-aggregation
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: policy-reports-aggregation-server
+  template:
+    metadata:
+      labels:
+        app: policy-reports-aggregation-server
+    spec:
+      containers:
+      - image: ghcr.io/vishal-chdhry/policy-reports-aggregation:test
+        name: policy-reports-aggregation-server
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace  
+          - name: SERVICE_NAME
+            value: policy-reports-aggregation-server
+          - name: DEPLOYMENT_NAME
+            value: policy-reports-aggregation-server
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+      serviceAccountName: kyverno-notation-aws
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: policy-reports-aggregation-server
+  name: policy-reports-aggregation-server
+  namespace: policy-reports-aggregation
+spec:
+  ports:
+  - port: 7443
+    protocol: TCP
+    targetPort: 7443
+  selector:
+    app: policy-reports-aggregation-server
+---
+apiVersion: apiregistration.k8s.io/v1
+kind: APIService
+metadata:
+  name: v1alpha1.policyreports.vishal.demo
+spec:
+  group: policyreports.vishal.demo
+  version: v1alpha1
+  groupPriorityMinimum: 100
+  versionPriority: 100
+  service:
+    namespace: policy-reports-aggregation
+    name: policy-reports-aggregation-server
+    port: 7443
