@@ -2,12 +2,12 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: policy-reports-aggregation
+  name: prext
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: policy-reports-aggregation-cluster-role
+  name: prext-cluster-role
 rules:
 - apiGroups:
   - "*"
@@ -26,21 +26,21 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: policy-reports-aggregation-cluster-rolebinding
+  name: prext-cluster-rolebinding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: policy-reports-aggregation-cluster-role
+  name: prext-cluster-role
 subjects:
 - kind: ServiceAccount
   name: default
-  namespace: policy-reports-aggregation
+  namespace: prext
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: policy-reports-aggregation-role
-  namespace: policy-reports-aggregation
+  name: prext-role
+  namespace: prext
 rules:
 - apiGroups:
   - ""
@@ -69,37 +69,37 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: policy-reports-aggregation-rolebinding
-  namespace: policy-reports-aggregation
+  name: prext-rolebinding
+  namespace: prext
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: policy-reports-aggregation-role
+  name: prext-role
 subjects:
 - kind: ServiceAccount
   name: default
-  namespace: policy-reports-aggregation
+  namespace: prext
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: policy-reports-aggregation-server
-  name: policy-reports-aggregation-server
-  namespace: policy-reports-aggregation
+    app: prext-server
+  name: prext-server
+  namespace: prext
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: policy-reports-aggregation-server
+      app: prext-server
   template:
     metadata:
       labels:
-        app: policy-reports-aggregation-server
+        app: prext-server
     spec:
       containers:
-      - image: ghcr.io/vishal-chdhry/policy-reports-aggregation:test
-        name: policy-reports-aggregation-server
+      - image: ghcr.io/vishal-chdhry/prext:test
+        name: prext-server
         imagePullPolicy: IfNotPresent
         env:
           - name: POD_NAMESPACE
@@ -107,29 +107,29 @@ spec:
               fieldRef:
                 fieldPath: metadata.namespace  
           - name: SERVICE_NAME
-            value: policy-reports-aggregation-server
+            value: prext-svc
           - name: DEPLOYMENT_NAME
-            value: policy-reports-aggregation-server
+            value: prext-server
           - name: POD_NAME
             valueFrom:
               fieldRef:
                 fieldPath: metadata.name
-      serviceAccountName: kyverno-notation-aws
+      serviceAccountName: default
 ---
 apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: policy-reports-aggregation-server
-  name: policy-reports-aggregation-server
-  namespace: policy-reports-aggregation
+    app: prext-server
+  name: prext-svc
+  namespace: prext
 spec:
   ports:
   - port: 7443
     protocol: TCP
     targetPort: 7443
   selector:
-    app: policy-reports-aggregation-server
+    app: prext-server
 ---
 apiVersion: apiregistration.k8s.io/v1
 kind: APIService
@@ -141,6 +141,6 @@ spec:
   groupPriorityMinimum: 100
   versionPriority: 100
   service:
-    namespace: policy-reports-aggregation
-    name: policy-reports-aggregation-server
+    namespace: prext
+    name: prext-svc
     port: 7443
