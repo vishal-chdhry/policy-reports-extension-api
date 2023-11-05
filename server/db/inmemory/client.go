@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/k3s-io/kine/pkg/client"
+	"github.com/vishal-chdhry/policy-reports-extension-api/server/db"
 	"github.com/vishal-chdhry/policy-reports-extension-api/server/pkg/common"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -18,7 +19,11 @@ type inMemoryDb struct {
 }
 
 func New() client.Client {
-	return &inMemoryDb{}
+	inMemoryDb := &inMemoryDb{
+		db: make(map[string]client.Value),
+	}
+	db.PopulateDB(inMemoryDb)
+	return inMemoryDb
 }
 
 func (i *inMemoryDb) List(ctx context.Context, prefix string, rev int) ([]client.Value, error) {
