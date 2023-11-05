@@ -1,6 +1,8 @@
 Policy Reports Extension
 ===============================================
 
+Inspiration: https://github.com/cmurphy/hns-list
+
 This project is a Kubernetes [API
 Extension](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/)
 to store Policy reports and cluster policy reports in an external database instead of etcd.
@@ -12,7 +14,17 @@ This extension allows us store policy reports outside of etcd.
 Build
 -----
 
-Build the docker image for the server using `server/Dockerfile`
+Build the kubectl-policy-report-extension plugin and install it in your GOPATH:
+
+```
+make cli
+```
+
+Build the docker image for the server:
+
+```
+make server
+```
 
 Apply the manifests in a kubernetes cluster:
 
