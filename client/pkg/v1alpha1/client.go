@@ -61,7 +61,7 @@ func NewForConfigOrDie(c *rest.Config) *DemoPolicyV1alpha2Client {
 }
 
 func setConfigDefaults(config *rest.Config) error {
-	gv := schema.GroupVersion{Group: "policyreports.vishal.demo", Version: "v1alpha1"}
+	gv := schema.GroupVersion{Group: "prext.demo", Version: "v1alpha1"}
 	config.GroupVersion = &gv
 	config.APIPath = "/apis"
 	config.NegotiatedSerializer = scheme.Codecs.WithoutConversion()

@@ -134,9 +134,9 @@ spec:
 apiVersion: apiregistration.k8s.io/v1
 kind: APIService
 metadata:
-  name: v1alpha1.policyreports.vishal.demo
+  name: v1alpha1.prext.demo
 spec:
-  group: policyreports.vishal.demo
+  group: prext.demo
   version: v1alpha1
   groupPriorityMinimum: 100
   versionPriority: 100

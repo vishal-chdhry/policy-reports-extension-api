@@ -1,7 +1,7 @@
 package common
 
 const (
-	Group        = "policyreports.vishal.demo"
+	Group        = "prext.demo"
 	Version      = "v1alpha1"
 	GroupVersion = Group + "/" + Version
 
