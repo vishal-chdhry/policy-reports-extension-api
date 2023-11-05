@@ -1,5 +1,3 @@
-# policy-reports-extension-api
-
 Policy Reports Extension
 ===============================================
 
