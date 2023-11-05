@@ -23,10 +23,10 @@ type handlerSet struct {
 	polHandler  PolicyReportsInterface
 }
 
-func NewHandlerSet(kineClient client.Client) HandlerSetInterface {
+func NewHandlerSet(dbClient client.Client) HandlerSetInterface {
 	return &handlerSet{
-		cpolHandler: newClusterPolicyHandler(kineClient),
-		polHandler:  newPolicyHandler(kineClient),
+		cpolHandler: newClusterPolicyHandler(dbClient),
+		polHandler:  newPolicyHandler(dbClient),
 	}
 }
 

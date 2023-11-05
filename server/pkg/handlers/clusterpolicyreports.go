@@ -29,9 +29,9 @@ type clusterpolicyreportshandler struct {
 	kineClient client.Client
 }
 
-func newClusterPolicyHandler(kineClient client.Client) ClusterPolicyReportsInterface {
+func newClusterPolicyHandler(dbClient client.Client) ClusterPolicyReportsInterface {
 	return &clusterpolicyreportshandler{
-		kineClient: kineClient,
+		kineClient: dbClient,
 	}
 }
 

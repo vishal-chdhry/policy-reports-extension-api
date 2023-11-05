@@ -29,9 +29,9 @@ type policyreportshandler struct {
 	kineClient client.Client
 }
 
-func newPolicyHandler(kineClient client.Client) PolicyReportsInterface {
+func newPolicyHandler(dbClient client.Client) PolicyReportsInterface {
 	return &policyreportshandler{
-		kineClient: kineClient,
+		kineClient: dbClient,
 	}
 }
 
