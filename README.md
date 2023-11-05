@@ -1,4 +1,4 @@
-Policy Reports Extension
+Policy Reports Extension (PRExt)
 ===============================================
 
 Inspiration: https://github.com/cmurphy/hns-list
@@ -14,7 +14,7 @@ This extension allows us store policy reports outside of etcd.
 Build
 -----
 
-Build the kubectl-policy-report-extension plugin and install it in your GOPATH:
+Build the kubectl-prext plugin and install it in your GOPATH:
 
 ```
 make cli

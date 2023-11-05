@@ -29,7 +29,7 @@ var (
 	Namespace      = os.Getenv("POD_NAMESPACE")
 	PodName        = os.Getenv("POD_NAME")
 	ServiceName    = common.LookupEnvOrDefault("SERVICE_NAME", "svc")
-	DeploymentName = common.LookupEnvOrDefault("DEPLOYMENT_NAME", "policy-reports-aggregation-demo")
+	DeploymentName = common.LookupEnvOrDefault("DEPLOYMENT_NAME", "prext-server")
 
 	CertRenewalInterval = 12 * time.Hour
 	CAValidityDuration  = 365 * 24 * time.Hour
