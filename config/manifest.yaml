@@ -4,6 +4,12 @@ kind: Namespace
 metadata:
   name: prext
 ---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prext
+  namespace: prext
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -33,7 +39,20 @@ roleRef:
   name: prext-cluster-role
 subjects:
 - kind: ServiceAccount
-  name: default
+  name: prext
+  namespace: prext
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: prext-token-review-clusterrolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator
+subjects:
+- kind: ServiceAccount
+  name: prext
   namespace: prext
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -77,7 +96,22 @@ roleRef:
   name: prext-role
 subjects:
 - kind: ServiceAccount
-  name: default
+  name: prext
+  namespace: prext
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: "servicecatalog.k8s.io:apiserver-authentication-reader"
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: extension-apiserver-authentication-reader
+subjects:
+- apiGroup: ""
+  kind: ServiceAccount
+  name: prext
   namespace: prext
 ---
 apiVersion: apps/v1
@@ -98,30 +132,41 @@ spec:
         app: prext-server
     spec:
       containers:
-      - image: ghcr.io/vishal-chdhry/prext:test
+      - image: ghcr.io/vishal-chdhry/prext@sha256:815590d5f3b2f6f37ce0bf7eb34617ffc1afa814c65e77b461b9d9035b6fbc43
         name: prext-server
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         env:
-          - name: POD_NAMESPACE
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.namespace  
-          - name: SERVICE_NAME
-            value: prext-svc
-          - name: DEPLOYMENT_NAME
-            value: prext-server
-          - name: POD_NAME
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.name
-      serviceAccountName: default
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace  
+        - name: SERVICE_NAME
+          value: prext-server
+        - name: DEPLOYMENT_NAME
+          value: prext-server
+        - name: CERT_MANAGER_SECRET
+          value: prext-cert-secret
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: CERTPATH
+          value: /certs/tls.crt
+        - name: KEYPATH
+          value: /certs/tls.key
+      serviceAccountName: prext
+      # volumes:
+      # - secret:
+      #     defaultMode: 420
+      #     secretName: prext-cert-secret
+      #   name: certs
 ---
 apiVersion: v1
 kind: Service
 metadata:
   labels:
     app: prext-server
-  name: prext-svc
+  name: prext-server
   namespace: prext
 spec:
   ports:
@@ -131,16 +176,40 @@ spec:
   selector:
     app: prext-server
 ---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: ca-issuer
+  namespace: prext
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: prext-server-cert
+  namespace: prext
+spec:
+  dnsNames:
+  - prext-server.prext.svc
+  - prext-server.prext.svc.cluster.local
+  issuerRef:
+    kind: Issuer
+    name: ca-issuer
+  secretName: prext-cert-secret
+---
 apiVersion: apiregistration.k8s.io/v1
 kind: APIService
 metadata:
   name: v1alpha1.prext.demo
+  annotations:
+    cert-manager.io/inject-ca-from: prext/prext-server-cert
 spec:
   group: prext.demo
   version: v1alpha1
-  groupPriorityMinimum: 100
-  versionPriority: 100
+  groupPriorityMinimum: 10
+  versionPriority: 10
   service:
     namespace: prext
-    name: prext-svc
+    name: prext-server
     port: 7443
