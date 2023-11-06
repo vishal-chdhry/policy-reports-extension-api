@@ -82,6 +82,7 @@ func (h *handlerSet) ClusterScopedHandler(ctx context.Context) func(http.Respons
 			http.Error(w, "method not supported on this endpoint", http.StatusBadRequest)
 			return
 		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write(data)
 	}
@@ -136,6 +137,7 @@ func (h *handlerSet) ClusterScopedHandlerWithName(ctx context.Context) func(http
 			http.Error(w, "method not supported on this endpoint", http.StatusBadRequest)
 			return
 		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write(data)
 	}
@@ -190,6 +192,7 @@ func (h *handlerSet) NamespacedHandler(ctx context.Context) func(http.ResponseWr
 			http.Error(w, "method not supported on this endpoint", http.StatusBadRequest)
 			return
 		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write(data)
 	}
@@ -244,6 +247,7 @@ func (h *handlerSet) NamespacedHandlerWithName(ctx context.Context) func(http.Re
 			http.Error(w, "method not supported on this endpoint", http.StatusBadRequest)
 			return
 		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write(data)
 	}
