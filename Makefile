@@ -13,3 +13,4 @@ cli: install-cli
 .PHONY: server
 server:
 	docker build . -t ghcr.io/vishal-chdhry/prext:latest
+	docker push ghcr.io/vishal-chdhry/prext:latest
