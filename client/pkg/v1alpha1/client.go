@@ -3,6 +3,8 @@ package v1alpha1
 import (
 	"net/http"
 
+	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/rest"
 	"k8s.io/kubectl/pkg/scheme"
@@ -15,8 +17,27 @@ type DemoPolicyV1alpha2Interface interface {
 }
 
 var (
-	GroupVersion = schema.GroupVersion{Group: "prext.demo", Version: "v1alpha1"}
+	GroupVersion   = schema.GroupVersion{Group: "prext.demo", Version: "v1alpha1"}
+	Scheme         *runtime.Scheme
+	ParameterCodec runtime.ParameterCodec
 )
+
+func init() {
+	Scheme = runtime.NewScheme()
+	addKnownTypes(Scheme)
+	ParameterCodec = runtime.NewParameterCodec(Scheme)
+}
+
+func addKnownTypes(scheme *runtime.Scheme) error {
+	scheme.AddKnownTypes(GroupVersion,
+		&ClusterPolicyReport{},
+		&ClusterPolicyReportList{},
+		&PolicyReport{},
+		&PolicyReportList{},
+	)
+	meta.AddToGroupVersion(scheme, GroupVersion)
+	return nil
+}
 
 type DemoPolicyV1alpha2Client struct {
 	restClient rest.Interface

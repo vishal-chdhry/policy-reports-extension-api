@@ -5,7 +5,6 @@ import (
 	"time"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	rest "k8s.io/client-go/rest"
@@ -16,9 +15,6 @@ import (
 type PolicyReportsGetter interface {
 	PolicyReports(namespace string) PolicyReportInterface
 }
-
-var Scheme = runtime.NewScheme()
-var ParameterCodec = runtime.NewParameterCodec(Scheme)
 
 // PolicyReportInterface has methods to work with PolicyReport resources.
 type PolicyReportInterface interface {

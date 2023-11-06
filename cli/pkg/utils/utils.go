@@ -3,7 +3,7 @@ package utils
 import (
 	"reflect"
 
-	"github.com/kyverno/kyverno/api/policyreport/v1alpha2"
+	"github.com/vishal-chdhry/policy-reports-extension-api/client/pkg/v1alpha1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
@@ -15,7 +15,7 @@ func IsClusterPolicyReport(resource string) bool {
 	return resource == "cpolr" || resource == "clusterpolicyreport" || resource == "clusterpolicyreports"
 }
 
-func PolicyReportToUnstructured(pol *v1alpha2.PolicyReport) *unstructured.Unstructured {
+func PolicyReportToUnstructured(pol *v1alpha1.PolicyReport) *unstructured.Unstructured {
 	intr := reflect.ValueOf(pol).Interface().(map[string]interface{})
 
 	return &unstructured.Unstructured{
@@ -23,7 +23,7 @@ func PolicyReportToUnstructured(pol *v1alpha2.PolicyReport) *unstructured.Unstru
 	}
 }
 
-func ClusterPolicyReportToUnstructured(cpol *v1alpha2.ClusterPolicyReport) *unstructured.Unstructured {
+func ClusterPolicyReportToUnstructured(cpol *v1alpha1.ClusterPolicyReport) *unstructured.Unstructured {
 	intr := reflect.ValueOf(cpol).Interface().(map[string]interface{})
 
 	return &unstructured.Unstructured{
@@ -31,7 +31,7 @@ func ClusterPolicyReportToUnstructured(cpol *v1alpha2.ClusterPolicyReport) *unst
 	}
 }
 
-func ClusterPolicyReportListToUnstructuredList(cpol *v1alpha2.ClusterPolicyReportList) *unstructured.UnstructuredList {
+func ClusterPolicyReportListToUnstructuredList(cpol *v1alpha1.ClusterPolicyReportList) *unstructured.UnstructuredList {
 	intr := reflect.ValueOf(cpol).Interface().(map[string]interface{})
 
 	ul := make([]unstructured.Unstructured, 0)
@@ -46,7 +46,7 @@ func ClusterPolicyReportListToUnstructuredList(cpol *v1alpha2.ClusterPolicyRepor
 	}
 }
 
-func PolicyReportListToUnstructuredList(cpol *v1alpha2.PolicyReportList) *unstructured.UnstructuredList {
+func PolicyReportListToUnstructuredList(cpol *v1alpha1.PolicyReportList) *unstructured.UnstructuredList {
 	intr := reflect.ValueOf(cpol).Interface().(map[string]interface{})
 
 	ul := make([]unstructured.Unstructured, 0)
