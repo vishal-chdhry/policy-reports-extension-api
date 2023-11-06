@@ -2,13 +2,12 @@ module github.com/vishal-chdhry/policy-reports-extension-api/server
 
 go 1.21.1
 
+replace github.com/vishal-chdhry/policy-reports-extension-api/client => ../client
+
 require (
-	github.com/go-logr/zapr v1.2.4
 	github.com/gorilla/mux v1.8.0
 	github.com/k3s-io/kine v0.10.3
-	github.com/kyverno/kyverno v1.8.5
-	github.com/kyverno/pkg/certmanager v0.0.10
-	github.com/kyverno/pkg/tls v0.0.9
+	github.com/vishal-chdhry/policy-reports-extension-api/client v0.0.0-20231106135601-43a4f58f4b71
 	go.uber.org/zap v1.26.0
 	k8s.io/api v0.28.3
 	k8s.io/apimachinery v0.28.3
@@ -119,6 +118,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/klog/v2 v2.100.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20230816210353-14e408962443 // indirect
+	k8s.io/kubectl v0.26.3 // indirect
 	k8s.io/utils v0.0.0-20230726121419-3b25d923346b // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.3.0 // indirect

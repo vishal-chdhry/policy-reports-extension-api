@@ -6,23 +6,23 @@ import (
 	"fmt"
 
 	"github.com/k3s-io/kine/pkg/client"
-	"github.com/kyverno/kyverno/api/policyreport/v1alpha2"
+	"github.com/vishal-chdhry/policy-reports-extension-api/client/pkg/v1alpha1"
 	"github.com/vishal-chdhry/policy-reports-extension-api/server/pkg/common"
 	"k8s.io/apimachinery/pkg/api/errors"
 )
 
 type ClusterPolicyReportsInterface interface {
-	Get(ctx context.Context, name string) (*v1alpha2.ClusterPolicyReport, error)
+	Get(ctx context.Context, name string) (*v1alpha1.ClusterPolicyReport, error)
 
-	List(ctx context.Context) ([]*v1alpha2.ClusterPolicyReport, error)
+	List(ctx context.Context) ([]*v1alpha1.ClusterPolicyReport, error)
 
 	Delete(ctx context.Context, name string) error
 
 	DeleteCollection(ctx context.Context) error
 
-	Update(ctx context.Context, clusterPolicyReport *v1alpha2.ClusterPolicyReport, name string) (*v1alpha2.ClusterPolicyReport, error)
+	Update(ctx context.Context, clusterPolicyReport *v1alpha1.ClusterPolicyReport, name string) (*v1alpha1.ClusterPolicyReport, error)
 
-	Create(ctx context.Context, clusterPolicyReport *v1alpha2.ClusterPolicyReport) (*v1alpha2.ClusterPolicyReport, error)
+	Create(ctx context.Context, clusterPolicyReport *v1alpha1.ClusterPolicyReport) (*v1alpha1.ClusterPolicyReport, error)
 }
 
 type clusterpolicyreportshandler struct {
@@ -35,7 +35,7 @@ func newClusterPolicyHandler(dbClient client.Client) ClusterPolicyReportsInterfa
 	}
 }
 
-func (c *clusterpolicyreportshandler) Get(ctx context.Context, name string) (*v1alpha2.ClusterPolicyReport, error) {
+func (c *clusterpolicyreportshandler) Get(ctx context.Context, name string) (*v1alpha1.ClusterPolicyReport, error) {
 	if len(name) == 0 {
 		return nil, errors.NewBadRequest("name  cannot be nil")
 	}
@@ -45,7 +45,7 @@ func (c *clusterpolicyreportshandler) Get(ctx context.Context, name string) (*v1
 		return nil, err
 	}
 
-	var clusterPolicyReport v1alpha2.ClusterPolicyReport
+	var clusterPolicyReport v1alpha1.ClusterPolicyReport
 	err = json.Unmarshal(val.Data, &clusterPolicyReport)
 	if err != nil {
 		return nil, errors.NewBadRequest("invalid object found")
@@ -53,15 +53,15 @@ func (c *clusterpolicyreportshandler) Get(ctx context.Context, name string) (*v1
 	return &clusterPolicyReport, nil
 }
 
-func (c *clusterpolicyreportshandler) List(ctx context.Context) ([]*v1alpha2.ClusterPolicyReport, error) {
+func (c *clusterpolicyreportshandler) List(ctx context.Context) ([]*v1alpha1.ClusterPolicyReport, error) {
 	val, err := c.kineClient.List(ctx, getClusterPolicyReportKeyForList(), 0) // TODO: Revision?
 	if err != nil {
 		return nil, err
 	}
 
-	var clusterPolicyReports = make([]*v1alpha2.ClusterPolicyReport, 0)
+	var clusterPolicyReports = make([]*v1alpha1.ClusterPolicyReport, 0)
 	for _, v := range val {
-		var clusterPolicyReport v1alpha2.ClusterPolicyReport
+		var clusterPolicyReport v1alpha1.ClusterPolicyReport
 		err = json.Unmarshal(v.Data, &clusterPolicyReport)
 		if err != nil {
 			return nil, errors.NewBadRequest("invalid object found")
@@ -72,7 +72,7 @@ func (c *clusterpolicyreportshandler) List(ctx context.Context) ([]*v1alpha2.Clu
 	return clusterPolicyReports, nil
 }
 
-func (c *clusterpolicyreportshandler) Create(ctx context.Context, clusterPolicyReport *v1alpha2.ClusterPolicyReport) (*v1alpha2.ClusterPolicyReport, error) {
+func (c *clusterpolicyreportshandler) Create(ctx context.Context, clusterPolicyReport *v1alpha1.ClusterPolicyReport) (*v1alpha1.ClusterPolicyReport, error) {
 	if clusterPolicyReport == nil {
 		return nil, errors.NewBadRequest("clusterpolicyreport cannot be nil")
 	}
@@ -90,7 +90,7 @@ func (c *clusterpolicyreportshandler) Create(ctx context.Context, clusterPolicyR
 	return clusterPolicyReport, nil
 }
 
-func (c *clusterpolicyreportshandler) Update(ctx context.Context, clusterPolicyReport *v1alpha2.ClusterPolicyReport, name string) (*v1alpha2.ClusterPolicyReport, error) {
+func (c *clusterpolicyreportshandler) Update(ctx context.Context, clusterPolicyReport *v1alpha1.ClusterPolicyReport, name string) (*v1alpha1.ClusterPolicyReport, error) {
 	if clusterPolicyReport == nil || len(name) == 0 {
 		return nil, errors.NewBadRequest("clusterpolicyreport or name cannot be nil")
 	}

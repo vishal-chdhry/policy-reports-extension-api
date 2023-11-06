@@ -8,7 +8,8 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/k3s-io/kine/pkg/client"
-	"github.com/kyverno/kyverno/api/policyreport/v1alpha2"
+	"github.com/vishal-chdhry/policy-reports-extension-api/client/pkg/v1alpha1"
+
 	"go.uber.org/zap"
 )
 
@@ -46,7 +47,7 @@ func (h *handlerSet) ClusterScopedHandler(ctx context.Context) func(http.Respons
 		var err error
 		switch r.Method {
 		case http.MethodGet:
-			var val []*v1alpha2.ClusterPolicyReport
+			var val []*v1alpha1.ClusterPolicyReport
 			val, err = h.cpolHandler.List(ctx)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusNotAcceptable)
@@ -58,7 +59,7 @@ func (h *handlerSet) ClusterScopedHandler(ctx context.Context) func(http.Respons
 				return
 			}
 		case http.MethodPost:
-			var clusterPolicyReport *v1alpha2.ClusterPolicyReport
+			var clusterPolicyReport *v1alpha1.ClusterPolicyReport
 			raw, _ := io.ReadAll(r.Body)
 			h.logger.Info("Body:", string(raw))
 			err := json.Unmarshal(raw, &clusterPolicyReport)
@@ -101,7 +102,7 @@ func (h *handlerSet) ClusterScopedHandlerWithName(ctx context.Context) func(http
 		var err error
 		switch r.Method {
 		case http.MethodGet:
-			var val *v1alpha2.ClusterPolicyReport
+			var val *v1alpha1.ClusterPolicyReport
 			val, err = h.cpolHandler.Get(ctx, vars["name"])
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusNotAcceptable)
@@ -113,7 +114,7 @@ func (h *handlerSet) ClusterScopedHandlerWithName(ctx context.Context) func(http
 				return
 			}
 		case http.MethodPost:
-			var clusterPolicyReport *v1alpha2.ClusterPolicyReport
+			var clusterPolicyReport *v1alpha1.ClusterPolicyReport
 			raw, _ := io.ReadAll(r.Body)
 			h.logger.Info("Body:", string(raw))
 			err := json.Unmarshal(raw, &clusterPolicyReport)
@@ -156,7 +157,7 @@ func (h *handlerSet) NamespacedHandler(ctx context.Context) func(http.ResponseWr
 		var err error
 		switch r.Method {
 		case http.MethodGet:
-			var val []*v1alpha2.PolicyReport
+			var val []*v1alpha1.PolicyReport
 			val, err = h.polHandler.List(ctx, vars["namespace"])
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusNotAcceptable)
@@ -168,7 +169,7 @@ func (h *handlerSet) NamespacedHandler(ctx context.Context) func(http.ResponseWr
 				return
 			}
 		case http.MethodPost:
-			var policyReport *v1alpha2.PolicyReport
+			var policyReport *v1alpha1.PolicyReport
 			raw, _ := io.ReadAll(r.Body)
 			h.logger.Info("Body:", string(raw))
 			err := json.Unmarshal(raw, &policyReport)
@@ -211,7 +212,7 @@ func (h *handlerSet) NamespacedHandlerWithName(ctx context.Context) func(http.Re
 		var err error
 		switch r.Method {
 		case http.MethodGet:
-			var val *v1alpha2.PolicyReport
+			var val *v1alpha1.PolicyReport
 			val, err = h.polHandler.Get(ctx, vars["name"], vars["namespace"])
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusNotAcceptable)
@@ -223,7 +224,7 @@ func (h *handlerSet) NamespacedHandlerWithName(ctx context.Context) func(http.Re
 				return
 			}
 		case http.MethodPost:
-			var policyReport *v1alpha2.PolicyReport
+			var policyReport *v1alpha1.PolicyReport
 			raw, _ := io.ReadAll(r.Body)
 			h.logger.Info("Body:", string(raw))
 			err := json.Unmarshal(raw, &policyReport)

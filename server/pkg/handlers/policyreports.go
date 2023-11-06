@@ -6,23 +6,23 @@ import (
 	"fmt"
 
 	"github.com/k3s-io/kine/pkg/client"
-	"github.com/kyverno/kyverno/api/policyreport/v1alpha2"
+	"github.com/vishal-chdhry/policy-reports-extension-api/client/pkg/v1alpha1"
 	"github.com/vishal-chdhry/policy-reports-extension-api/server/pkg/common"
 	"k8s.io/apimachinery/pkg/api/errors"
 )
 
 type PolicyReportsInterface interface {
-	Get(ctx context.Context, name, namespace string) (*v1alpha2.PolicyReport, error)
+	Get(ctx context.Context, name, namespace string) (*v1alpha1.PolicyReport, error)
 
-	List(ctx context.Context, namespace string) ([]*v1alpha2.PolicyReport, error)
+	List(ctx context.Context, namespace string) ([]*v1alpha1.PolicyReport, error)
 
 	Delete(ctx context.Context, name, namespace string) error
 
 	DeleteCollection(ctx context.Context, namespace string) error
 
-	Create(ctx context.Context, policyReport *v1alpha2.PolicyReport, namespace string) (*v1alpha2.PolicyReport, error)
+	Create(ctx context.Context, policyReport *v1alpha1.PolicyReport, namespace string) (*v1alpha1.PolicyReport, error)
 
-	Update(ctx context.Context, policyReport *v1alpha2.PolicyReport, name, namespace string) (*v1alpha2.PolicyReport, error)
+	Update(ctx context.Context, policyReport *v1alpha1.PolicyReport, name, namespace string) (*v1alpha1.PolicyReport, error)
 }
 
 type policyreportshandler struct {
@@ -35,7 +35,7 @@ func newPolicyHandler(dbClient client.Client) PolicyReportsInterface {
 	}
 }
 
-func (p *policyreportshandler) Get(ctx context.Context, name, namespace string) (*v1alpha2.PolicyReport, error) {
+func (p *policyreportshandler) Get(ctx context.Context, name, namespace string) (*v1alpha1.PolicyReport, error) {
 	if len(name) == 0 || len(namespace) == 0 {
 		return nil, errors.NewBadRequest("name or namespace cannot be nil")
 	}
@@ -45,7 +45,7 @@ func (p *policyreportshandler) Get(ctx context.Context, name, namespace string) 
 		return nil, err
 	}
 
-	var policyReport v1alpha2.PolicyReport
+	var policyReport v1alpha1.PolicyReport
 	err = json.Unmarshal(val.Data, &policyReport)
 	if err != nil {
 		return nil, errors.NewBadRequest("invalid object found")
@@ -53,7 +53,7 @@ func (p *policyreportshandler) Get(ctx context.Context, name, namespace string) 
 	return &policyReport, nil
 }
 
-func (p *policyreportshandler) List(ctx context.Context, namespace string) ([]*v1alpha2.PolicyReport, error) {
+func (p *policyreportshandler) List(ctx context.Context, namespace string) ([]*v1alpha1.PolicyReport, error) {
 	if len(namespace) == 0 {
 		return nil, errors.NewBadRequest("namespace cannot be nil")
 	}
@@ -63,9 +63,9 @@ func (p *policyreportshandler) List(ctx context.Context, namespace string) ([]*v
 		return nil, err
 	}
 
-	var policyReports = make([]*v1alpha2.PolicyReport, 0)
+	var policyReports = make([]*v1alpha1.PolicyReport, 0)
 	for _, v := range val {
-		var policyReport v1alpha2.PolicyReport
+		var policyReport v1alpha1.PolicyReport
 		err = json.Unmarshal(v.Data, &policyReport)
 		if err != nil {
 			return nil, errors.NewBadRequest("invalid object found")
@@ -76,7 +76,7 @@ func (p *policyreportshandler) List(ctx context.Context, namespace string) ([]*v
 	return policyReports, nil
 }
 
-func (p *policyreportshandler) Create(ctx context.Context, policyReport *v1alpha2.PolicyReport, namespace string) (*v1alpha2.PolicyReport, error) {
+func (p *policyreportshandler) Create(ctx context.Context, policyReport *v1alpha1.PolicyReport, namespace string) (*v1alpha1.PolicyReport, error) {
 	if policyReport == nil || len(namespace) == 0 {
 		return nil, errors.NewBadRequest("policyreport or namespace cannot be nil")
 	}
@@ -94,7 +94,7 @@ func (p *policyreportshandler) Create(ctx context.Context, policyReport *v1alpha
 	return policyReport, nil
 }
 
-func (p *policyreportshandler) Update(ctx context.Context, policyReport *v1alpha2.PolicyReport, name, namespace string) (*v1alpha2.PolicyReport, error) {
+func (p *policyreportshandler) Update(ctx context.Context, policyReport *v1alpha1.PolicyReport, name, namespace string) (*v1alpha1.PolicyReport, error) {
 	if policyReport == nil || len(name) == 0 || len(namespace) == 0 {
 		return nil, errors.NewBadRequest("policyreport, name or namespace cannot be nil")
 	}
