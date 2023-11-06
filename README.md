@@ -33,25 +33,44 @@ This extension allows us store policy reports outside of etcd.
 Build
 -----
 
-Build the kubectl-prext plugin and install it in your GOPATH:
-
-```
-make cli
-```
-
 Build the docker image for the server:
 
 ```
 make server
 ```
 
-Apply the manifests in a kubernetes cluster:
+Install
+-------
+
+1. Install [cert-manager](https://cert-manager.io/docs/installation/)
+
+2. Apply the manifest:
 
 ```
-kubectl apply -f config/manifest.yaml
+kubectl apply -f manifest/manifest.yaml
 ```
 
 Usage
 -----
 
-// TODO
+Create a new policy report:
+
+```
+kubectl create --raw /apis/prext.demo/v1alpha1/namespaces/default/policyreports -f config/testdata/testpolicy.json
+```
+
+Get the all policy reports in a namespace:
+
+```
+kubectl get --raw /apis/prext.demo/v1alpha1/namespaces/{{NAMESPACE}}/policyreports | jq --args ".[].metadata.name"      
+```
+
+View a policy report:
+```
+kubectl get --raw /apis/prext.demo/v1alpha1/namespaces/default/policyreports/test1
+```
+
+Delete a policy report: 
+```
+kubectl delete --raw /apis/prext.demo/v1alpha1/namespaces/default/policyreports/test 
+```
