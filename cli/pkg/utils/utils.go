@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"reflect"
+	"encoding/json"
 
 	"github.com/vishal-chdhry/policy-reports-extension-api/client/pkg/v1alpha1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -16,7 +16,11 @@ func IsClusterPolicyReport(resource string) bool {
 }
 
 func PolicyReportToUnstructured(pol *v1alpha1.PolicyReport) *unstructured.Unstructured {
-	intr := reflect.ValueOf(pol).Interface().(map[string]interface{})
+	b, err := json.Marshal(pol)
+	if err != nil {
+		panic(err)
+	}
+	intr := bytesToInterface(b)
 
 	return &unstructured.Unstructured{
 		Object: intr,
@@ -24,7 +28,11 @@ func PolicyReportToUnstructured(pol *v1alpha1.PolicyReport) *unstructured.Unstru
 }
 
 func ClusterPolicyReportToUnstructured(cpol *v1alpha1.ClusterPolicyReport) *unstructured.Unstructured {
-	intr := reflect.ValueOf(cpol).Interface().(map[string]interface{})
+	b, err := json.Marshal(cpol)
+	if err != nil {
+		panic(err)
+	}
+	intr := bytesToInterface(b)
 
 	return &unstructured.Unstructured{
 		Object: intr,
@@ -32,7 +40,11 @@ func ClusterPolicyReportToUnstructured(cpol *v1alpha1.ClusterPolicyReport) *unst
 }
 
 func ClusterPolicyReportListToUnstructuredList(cpol *v1alpha1.ClusterPolicyReportList) *unstructured.UnstructuredList {
-	intr := reflect.ValueOf(cpol).Interface().(map[string]interface{})
+	b, err := json.Marshal(cpol)
+	if err != nil {
+		panic(err)
+	}
+	intr := bytesToInterface(b)
 
 	ul := make([]unstructured.Unstructured, 0)
 	for _, v := range cpol.Items {
@@ -46,11 +58,15 @@ func ClusterPolicyReportListToUnstructuredList(cpol *v1alpha1.ClusterPolicyRepor
 	}
 }
 
-func PolicyReportListToUnstructuredList(cpol *v1alpha1.PolicyReportList) *unstructured.UnstructuredList {
-	intr := reflect.ValueOf(cpol).Interface().(map[string]interface{})
+func PolicyReportListToUnstructuredList(pol *v1alpha1.PolicyReportList) *unstructured.UnstructuredList {
+	b, err := json.Marshal(pol)
+	if err != nil {
+		panic(err)
+	}
+	intr := bytesToInterface(b)
 
 	ul := make([]unstructured.Unstructured, 0)
-	for _, v := range cpol.Items {
+	for _, v := range pol.Items {
 		unst := PolicyReportToUnstructured(&v)
 		ul = append(ul, *unst)
 	}
@@ -59,4 +75,13 @@ func PolicyReportListToUnstructuredList(cpol *v1alpha1.PolicyReportList) *unstru
 		Object: intr,
 		Items:  ul,
 	}
+}
+
+func bytesToInterface(b []byte) map[string]interface{} {
+	result := make(map[string]interface{})
+	err := json.Unmarshal(b, &result)
+	if err != nil {
+		panic(err)
+	}
+	return result
 }

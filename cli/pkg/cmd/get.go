@@ -17,7 +17,6 @@ import (
 	watcher "k8s.io/apimachinery/pkg/watch"
 	"k8s.io/apiserver/pkg/endpoints/handlers/negotiation"
 	"k8s.io/cli-runtime/pkg/printers"
-	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 )
 
@@ -58,7 +57,7 @@ func newDoer(resource string) doer {
 	printOpts := printers.PrintOptions{WithNamespace: true}
 	return doer{
 		client:  client,
-		printer: printers.NewTypeSetter(scheme.Scheme).ToPrinter(printers.NewTablePrinter(printOpts)),
+		printer: printers.NewTypeSetter(v1alpha1.Scheme).ToPrinter(printers.NewTablePrinter(printOpts)),
 	}
 }
 
@@ -88,6 +87,7 @@ func (d doer) getList(resource string) (string, error) {
 	if err = d.printer.PrintObj(table, os.Stdout); err != nil {
 		return rv, err
 	}
+	// fmt.Fprint(os.Stdout, table)
 	return rv, nil
 }
 

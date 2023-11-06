@@ -4,26 +4,28 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/vishal-chdhry/policy-reports-extension-api/client/pkg/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
-	"k8s.io/client-go/kubernetes/scheme"
 	apischeme "sigs.k8s.io/controller-runtime/pkg/scheme"
 )
 
 var (
-	rootCmd       *cobra.Command
-	namespace     string
-	output        string
-	inputfilepath string
-	GroupVersion  = schema.GroupVersion{Group: "prext.demo", Version: "v1alpha1"}
-	schemeBuilder = &apischeme.Builder{GroupVersion: GroupVersion}
-	mapper        meta.RESTMapper
-	client        *v1alpha1.DemoPolicyV1alpha2Client
+	rootCmd           *cobra.Command
+	namespace         string
+	output            string
+	inputfilepath     string
+	GroupVersion      = schema.GroupVersion{Group: "prext.demo", Version: "v1alpha1"}
+	TableGroupVersion = schema.GroupVersion{Group: "meta.k8s.io", Version: "v1"}
+	schemeBuilder     = &apischeme.Builder{GroupVersion: GroupVersion}
+	mapper            meta.RESTMapper
+	client            *v1alpha1.DemoPolicyV1alpha2Client
 )
 
 func init() {
-	utilruntime.Must(schemeBuilder.AddToScheme(scheme.Scheme))
+	v1alpha1.Scheme.AddKnownTypes(TableGroupVersion, &metav1.Table{})
+	utilruntime.Must(schemeBuilder.AddToScheme(v1alpha1.Scheme))
 
 	kubecfgFlags := genericclioptions.NewConfigFlags(false)
 

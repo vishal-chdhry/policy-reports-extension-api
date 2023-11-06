@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/k3s-io/kine/pkg/client"
 	"github.com/vishal-chdhry/policy-reports-extension-api/client/pkg/v1alpha1"
@@ -14,7 +15,7 @@ import (
 type PolicyReportsInterface interface {
 	Get(ctx context.Context, name, namespace string) (*v1alpha1.PolicyReport, error)
 
-	List(ctx context.Context, namespace string) ([]*v1alpha1.PolicyReport, error)
+	List(ctx context.Context, namespace string) (*v1alpha1.PolicyReportList, error)
 
 	Delete(ctx context.Context, name, namespace string) error
 
@@ -26,12 +27,12 @@ type PolicyReportsInterface interface {
 }
 
 type policyreportshandler struct {
-	kineClient client.Client
+	dbClient client.Client
 }
 
 func newPolicyHandler(dbClient client.Client) PolicyReportsInterface {
 	return &policyreportshandler{
-		kineClient: dbClient,
+		dbClient: dbClient,
 	}
 }
 
@@ -40,7 +41,7 @@ func (p *policyreportshandler) Get(ctx context.Context, name, namespace string) 
 		return nil, errors.NewBadRequest("name or namespace cannot be nil")
 	}
 
-	val, err := p.kineClient.Get(ctx, getPolicyReportKey(namespace, name))
+	val, err := p.dbClient.Get(ctx, getPolicyReportKey(namespace, name))
 	if err != nil {
 		return nil, err
 	}
@@ -53,27 +54,32 @@ func (p *policyreportshandler) Get(ctx context.Context, name, namespace string) 
 	return &policyReport, nil
 }
 
-func (p *policyreportshandler) List(ctx context.Context, namespace string) ([]*v1alpha1.PolicyReport, error) {
+func (p *policyreportshandler) List(ctx context.Context, namespace string) (*v1alpha1.PolicyReportList, error) {
 	if len(namespace) == 0 {
 		return nil, errors.NewBadRequest("namespace cannot be nil")
 	}
 
-	val, err := p.kineClient.List(ctx, getPolicyReportKeyForList(namespace), 0) // TODO: Revision?
+	val, err := p.dbClient.List(ctx, getPolicyReportKeyForList(namespace), 0) // TODO: Revision?
 	if err != nil {
 		return nil, err
 	}
 
-	var policyReports = make([]*v1alpha1.PolicyReport, 0)
+	var policyReportList *v1alpha1.PolicyReportList = &v1alpha1.PolicyReportList{}
+	policyReportList.Kind = "PolicyReportList"
+	policyReportList.APIVersion = "prext.demo/v1alpha1"
+	policyReportList.ResourceVersion = fmt.Sprint(time.Now().Unix() % 100000)
+	var policyReports = make([]v1alpha1.PolicyReport, 0)
 	for _, v := range val {
 		var policyReport v1alpha1.PolicyReport
 		err = json.Unmarshal(v.Data, &policyReport)
 		if err != nil {
 			return nil, errors.NewBadRequest("invalid object found")
 		}
-		policyReports = append(policyReports, &policyReport)
+		policyReports = append(policyReports, policyReport)
 	}
 
-	return policyReports, nil
+	policyReportList.Items = policyReports
+	return policyReportList, nil
 }
 
 func (p *policyreportshandler) Create(ctx context.Context, policyReport *v1alpha1.PolicyReport, namespace string) (*v1alpha1.PolicyReport, error) {
@@ -86,7 +92,7 @@ func (p *policyreportshandler) Create(ctx context.Context, policyReport *v1alpha
 		return nil, errors.NewBadRequest("policyreport could not be marshalled")
 	}
 
-	err = p.kineClient.Create(ctx, getPolicyReportKey(namespace, policyReport.Name), b)
+	err = p.dbClient.Create(ctx, getPolicyReportKey(namespace, policyReport.Name), b)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +110,7 @@ func (p *policyreportshandler) Update(ctx context.Context, policyReport *v1alpha
 		return nil, errors.NewBadRequest("policyreport could not be marshalled")
 	}
 
-	err = p.kineClient.Update(ctx, getPolicyReportKey(namespace, name), 0, b) // TODO: Revision?
+	err = p.dbClient.Update(ctx, getPolicyReportKey(namespace, name), 0, b) // TODO: Revision?
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +123,7 @@ func (p *policyreportshandler) Delete(ctx context.Context, name, namespace strin
 		return errors.NewBadRequest("name or namespace cannot be nil")
 	}
 
-	return p.kineClient.Delete(ctx, getPolicyReportKey(namespace, name), 1) // TODO: Revision?
+	return p.dbClient.Delete(ctx, getPolicyReportKey(namespace, name), 1) // TODO: Revision?
 }
 
 func (p *policyreportshandler) DeleteCollection(ctx context.Context, namespace string) error {
@@ -130,7 +136,7 @@ func (p *policyreportshandler) DeleteCollection(ctx context.Context, namespace s
 		return err
 	}
 
-	for _, v := range list {
+	for _, v := range list.Items {
 		err := p.Delete(ctx, v.Name, namespace)
 		if err != nil {
 			return err

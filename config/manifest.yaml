@@ -132,7 +132,7 @@ spec:
         app: prext-server
     spec:
       containers:
-      - image: ghcr.io/vishal-chdhry/prext@sha256:815590d5f3b2f6f37ce0bf7eb34617ffc1afa814c65e77b461b9d9035b6fbc43
+      - image: ghcr.io/vishal-chdhry/prext@sha256:fb3506e632fc77cef7d5f831676a1b118d82a7936b1e30b19179a9378c84de74
         name: prext-server
         imagePullPolicy: Always
         env:

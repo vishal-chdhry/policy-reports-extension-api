@@ -47,7 +47,7 @@ func (h *handlerSet) ClusterScopedHandler(ctx context.Context) func(http.Respons
 		var err error
 		switch r.Method {
 		case http.MethodGet:
-			var val []*v1alpha1.ClusterPolicyReport
+			var val *v1alpha1.ClusterPolicyReportList
 			val, err = h.cpolHandler.List(ctx)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusNotAcceptable)
@@ -58,7 +58,7 @@ func (h *handlerSet) ClusterScopedHandler(ctx context.Context) func(http.Respons
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-		case http.MethodPost:
+		case http.MethodPost, http.MethodPut:
 			var clusterPolicyReport *v1alpha1.ClusterPolicyReport
 			raw, _ := io.ReadAll(r.Body)
 			h.logger.Info("Body:", string(raw))
@@ -113,7 +113,7 @@ func (h *handlerSet) ClusterScopedHandlerWithName(ctx context.Context) func(http
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-		case http.MethodPost:
+		case http.MethodPost, http.MethodPut:
 			var clusterPolicyReport *v1alpha1.ClusterPolicyReport
 			raw, _ := io.ReadAll(r.Body)
 			h.logger.Info("Body:", string(raw))
@@ -157,7 +157,7 @@ func (h *handlerSet) NamespacedHandler(ctx context.Context) func(http.ResponseWr
 		var err error
 		switch r.Method {
 		case http.MethodGet:
-			var val []*v1alpha1.PolicyReport
+			var val *v1alpha1.PolicyReportList
 			val, err = h.polHandler.List(ctx, vars["namespace"])
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusNotAcceptable)
@@ -168,7 +168,7 @@ func (h *handlerSet) NamespacedHandler(ctx context.Context) func(http.ResponseWr
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-		case http.MethodPost:
+		case http.MethodPost, http.MethodPut:
 			var policyReport *v1alpha1.PolicyReport
 			raw, _ := io.ReadAll(r.Body)
 			h.logger.Info("Body:", string(raw))
@@ -223,7 +223,7 @@ func (h *handlerSet) NamespacedHandlerWithName(ctx context.Context) func(http.Re
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-		case http.MethodPost:
+		case http.MethodPost, http.MethodPut:
 			var policyReport *v1alpha1.PolicyReport
 			raw, _ := io.ReadAll(r.Body)
 			h.logger.Info("Body:", string(raw))

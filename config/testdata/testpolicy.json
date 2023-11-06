@@ -1,5 +1,5 @@
 {
-  "apiVersion": "prext.demo/v1beta1",
+  "apiVersion": "prext.demo/v1alpha1",
   "kind": "PolicyReport",
   "metadata": {
     "name": "test",
@@ -12,7 +12,6 @@
         "uid": "6c737f35-260c-4e4f-8516-61a125c9fb78"
       }
     ],
-    "resourceVersion": "128186106",
     "uid": "8f611e66-e398-401d-9624-fd9ec87a72f8"
   },
   "results": [

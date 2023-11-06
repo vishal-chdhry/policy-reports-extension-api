@@ -2,11 +2,9 @@ module github.com/vishal-chdhry/policy-reports-extension-api/cli
 
 go 1.21.1
 
-replace github.com/vishal-chdhry/policy-reports-extension-api/client => ../client
-
 require (
 	github.com/spf13/cobra v1.8.0
-	github.com/vishal-chdhry/policy-reports-extension-api/client v0.0.0-20231106083957-ef25290f99e7
+	github.com/vishal-chdhry/policy-reports-extension-api/client v0.0.0-20231106134526-a3c39af3078f
 	k8s.io/apimachinery v0.28.3
 	k8s.io/apiserver v0.28.3
 	k8s.io/cli-runtime v0.28.1

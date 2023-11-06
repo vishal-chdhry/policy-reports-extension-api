@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/k3s-io/kine/pkg/client"
 	"github.com/vishal-chdhry/policy-reports-extension-api/client/pkg/v1alpha1"
@@ -14,7 +15,7 @@ import (
 type ClusterPolicyReportsInterface interface {
 	Get(ctx context.Context, name string) (*v1alpha1.ClusterPolicyReport, error)
 
-	List(ctx context.Context) ([]*v1alpha1.ClusterPolicyReport, error)
+	List(ctx context.Context) (*v1alpha1.ClusterPolicyReportList, error)
 
 	Delete(ctx context.Context, name string) error
 
@@ -26,12 +27,12 @@ type ClusterPolicyReportsInterface interface {
 }
 
 type clusterpolicyreportshandler struct {
-	kineClient client.Client
+	dbClient client.Client
 }
 
 func newClusterPolicyHandler(dbClient client.Client) ClusterPolicyReportsInterface {
 	return &clusterpolicyreportshandler{
-		kineClient: dbClient,
+		dbClient: dbClient,
 	}
 }
 
@@ -40,7 +41,7 @@ func (c *clusterpolicyreportshandler) Get(ctx context.Context, name string) (*v1
 		return nil, errors.NewBadRequest("name  cannot be nil")
 	}
 
-	val, err := c.kineClient.Get(ctx, getClusterPolicyReportKey(name))
+	val, err := c.dbClient.Get(ctx, getClusterPolicyReportKey(name))
 	if err != nil {
 		return nil, err
 	}
@@ -53,23 +54,28 @@ func (c *clusterpolicyreportshandler) Get(ctx context.Context, name string) (*v1
 	return &clusterPolicyReport, nil
 }
 
-func (c *clusterpolicyreportshandler) List(ctx context.Context) ([]*v1alpha1.ClusterPolicyReport, error) {
-	val, err := c.kineClient.List(ctx, getClusterPolicyReportKeyForList(), 0) // TODO: Revision?
+func (c *clusterpolicyreportshandler) List(ctx context.Context) (*v1alpha1.ClusterPolicyReportList, error) {
+	val, err := c.dbClient.List(ctx, getClusterPolicyReportKeyForList(), 0) // TODO: Revision?
 	if err != nil {
 		return nil, err
 	}
 
-	var clusterPolicyReports = make([]*v1alpha1.ClusterPolicyReport, 0)
+	var clusterPolicyReportList *v1alpha1.ClusterPolicyReportList = &v1alpha1.ClusterPolicyReportList{}
+	clusterPolicyReportList.Kind = "ClusterPolicyReportList"
+	clusterPolicyReportList.APIVersion = "prext.demo/v1alpha1"
+	clusterPolicyReportList.ResourceVersion = fmt.Sprint(time.Now().Unix() % 100000)
+	var clusterPolicyReports = make([]v1alpha1.ClusterPolicyReport, 0)
 	for _, v := range val {
 		var clusterPolicyReport v1alpha1.ClusterPolicyReport
 		err = json.Unmarshal(v.Data, &clusterPolicyReport)
 		if err != nil {
 			return nil, errors.NewBadRequest("invalid object found")
 		}
-		clusterPolicyReports = append(clusterPolicyReports, &clusterPolicyReport)
+		clusterPolicyReports = append(clusterPolicyReports, clusterPolicyReport)
 	}
+	clusterPolicyReportList.Items = clusterPolicyReports
 
-	return clusterPolicyReports, nil
+	return clusterPolicyReportList, nil
 }
 
 func (c *clusterpolicyreportshandler) Create(ctx context.Context, clusterPolicyReport *v1alpha1.ClusterPolicyReport) (*v1alpha1.ClusterPolicyReport, error) {
@@ -82,7 +88,7 @@ func (c *clusterpolicyreportshandler) Create(ctx context.Context, clusterPolicyR
 		return nil, errors.NewBadRequest("clusterpolicyreport could not be marshalled")
 	}
 
-	err = c.kineClient.Create(ctx, getClusterPolicyReportKey(clusterPolicyReport.Name), b)
+	err = c.dbClient.Create(ctx, getClusterPolicyReportKey(clusterPolicyReport.Name), b)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +106,7 @@ func (c *clusterpolicyreportshandler) Update(ctx context.Context, clusterPolicyR
 		return nil, errors.NewBadRequest("clusterpolicyreport could not be marshalled")
 	}
 
-	err = c.kineClient.Update(ctx, getClusterPolicyReportKey(name), 0, b) // TODO: Revision?
+	err = c.dbClient.Update(ctx, getClusterPolicyReportKey(name), 0, b) // TODO: Revision?
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +119,7 @@ func (c *clusterpolicyreportshandler) Delete(ctx context.Context, name string) e
 		return errors.NewBadRequest("name cannot be nil")
 	}
 
-	return c.kineClient.Delete(ctx, getClusterPolicyReportKey(name), 1) // TODO: Revision?
+	return c.dbClient.Delete(ctx, getClusterPolicyReportKey(name), 1) // TODO: Revision?
 }
 
 func (c *clusterpolicyreportshandler) DeleteCollection(ctx context.Context) error {
@@ -122,7 +128,7 @@ func (c *clusterpolicyreportshandler) DeleteCollection(ctx context.Context) erro
 		return err
 	}
 
-	for _, v := range list {
+	for _, v := range list.Items {
 		err := c.Delete(ctx, v.Name)
 		if err != nil {
 			return err
