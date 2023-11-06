@@ -14,6 +14,10 @@ type DemoPolicyV1alpha2Interface interface {
 	ClusterPolicyReportsGetter
 }
 
+var (
+	GroupVersion = schema.GroupVersion{Group: "prext.demo", Version: "v1alpha1"}
+)
+
 type DemoPolicyV1alpha2Client struct {
 	restClient rest.Interface
 }

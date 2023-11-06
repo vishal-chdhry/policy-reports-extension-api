@@ -43,12 +43,12 @@ func newClusterPolicyReports(c *DemoPolicyV1alpha2Client) *clusterPolicyReports 
 }
 
 // Get takes name of the clusterPolicyReport, and returns the corresponding clusterPolicyReport object, and an error if there is any.
-func (c *clusterPolicyReports) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha2.ClusterPolicyReport, err error) {
+func (c *clusterPolicyReports) Get(ctx context.Context, name string, opts v1.GetOptions) (result *v1alpha2.ClusterPolicyReport, err error) {
 	result = &v1alpha2.ClusterPolicyReport{}
 	err = c.client.Get().
 		Resource("clusterpolicyreports").
 		Name(name).
-		VersionedParams(&options, scheme.ParameterCodec).
+		SpecificallyVersionedParams(&opts, scheme.ParameterCodec, GroupVersion).
 		Do(ctx).
 		Into(result)
 	return
@@ -63,7 +63,7 @@ func (c *clusterPolicyReports) List(ctx context.Context, opts v1.ListOptions) (r
 	result = &v1alpha2.ClusterPolicyReportList{}
 	err = c.client.Get().
 		Resource("clusterpolicyreports").
-		VersionedParams(&opts, scheme.ParameterCodec).
+		SpecificallyVersionedParams(&opts, scheme.ParameterCodec, GroupVersion).
 		Timeout(timeout).
 		Do(ctx).
 		Into(result)
@@ -79,7 +79,7 @@ func (c *clusterPolicyReports) Watch(ctx context.Context, opts v1.ListOptions) (
 	opts.Watch = true
 	return c.client.Get().
 		Resource("clusterpolicyreports").
-		VersionedParams(&opts, scheme.ParameterCodec).
+		SpecificallyVersionedParams(&opts, scheme.ParameterCodec, GroupVersion).
 		Timeout(timeout).
 		Watch(ctx)
 }
@@ -89,7 +89,7 @@ func (c *clusterPolicyReports) Create(ctx context.Context, clusterPolicyReport *
 	result = &v1alpha2.ClusterPolicyReport{}
 	err = c.client.Post().
 		Resource("clusterpolicyreports").
-		VersionedParams(&opts, scheme.ParameterCodec).
+		SpecificallyVersionedParams(&opts, scheme.ParameterCodec, GroupVersion).
 		Body(clusterPolicyReport).
 		Do(ctx).
 		Into(result)
@@ -102,7 +102,7 @@ func (c *clusterPolicyReports) Update(ctx context.Context, clusterPolicyReport *
 	err = c.client.Put().
 		Resource("clusterpolicyreports").
 		Name(clusterPolicyReport.Name).
-		VersionedParams(&opts, scheme.ParameterCodec).
+		SpecificallyVersionedParams(&opts, scheme.ParameterCodec, GroupVersion).
 		Body(clusterPolicyReport).
 		Do(ctx).
 		Into(result)
@@ -113,6 +113,7 @@ func (c *clusterPolicyReports) Update(ctx context.Context, clusterPolicyReport *
 func (c *clusterPolicyReports) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	return c.client.Delete().
 		Resource("clusterpolicyreports").
+		SpecificallyVersionedParams(&opts, scheme.ParameterCodec, GroupVersion).
 		Name(name).
 		Body(&opts).
 		Do(ctx).
@@ -127,7 +128,7 @@ func (c *clusterPolicyReports) DeleteCollection(ctx context.Context, opts v1.Del
 	}
 	return c.client.Delete().
 		Resource("clusterpolicyreports").
-		VersionedParams(&listOpts, scheme.ParameterCodec).
+		SpecificallyVersionedParams(&listOpts, scheme.ParameterCodec, GroupVersion).
 		Timeout(timeout).
 		Body(&opts).
 		Do(ctx).
@@ -141,7 +142,7 @@ func (c *clusterPolicyReports) Patch(ctx context.Context, name string, pt types.
 		Resource("clusterpolicyreports").
 		Name(name).
 		SubResource(subresources...).
-		VersionedParams(&opts, scheme.ParameterCodec).
+		SpecificallyVersionedParams(&opts, scheme.ParameterCodec, GroupVersion).
 		Body(data).
 		Do(ctx).
 		Into(result)

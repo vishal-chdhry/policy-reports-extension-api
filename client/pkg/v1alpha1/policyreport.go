@@ -51,7 +51,7 @@ func (c *policyReports) Get(ctx context.Context, name string, options v1.GetOpti
 		Namespace(c.ns).
 		Resource("policyreports").
 		Name(name).
-		VersionedParams(&options, scheme.ParameterCodec).
+		SpecificallyVersionedParams(&options, scheme.ParameterCodec, GroupVersion).
 		Do(ctx).
 		Into(result)
 	return
@@ -67,7 +67,7 @@ func (c *policyReports) List(ctx context.Context, opts v1.ListOptions) (result *
 	err = c.client.Get().
 		Namespace(c.ns).
 		Resource("policyreports").
-		VersionedParams(&opts, scheme.ParameterCodec).
+		SpecificallyVersionedParams(&opts, scheme.ParameterCodec, GroupVersion).
 		Timeout(timeout).
 		Do(ctx).
 		Into(result)
@@ -84,7 +84,7 @@ func (c *policyReports) Watch(ctx context.Context, opts v1.ListOptions) (watch.I
 	return c.client.Get().
 		Namespace(c.ns).
 		Resource("policyreports").
-		VersionedParams(&opts, scheme.ParameterCodec).
+		SpecificallyVersionedParams(&opts, scheme.ParameterCodec, GroupVersion).
 		Timeout(timeout).
 		Watch(ctx)
 }
@@ -95,7 +95,7 @@ func (c *policyReports) Create(ctx context.Context, policyReport *v1alpha2.Polic
 	err = c.client.Post().
 		Namespace(c.ns).
 		Resource("policyreports").
-		VersionedParams(&opts, scheme.ParameterCodec).
+		SpecificallyVersionedParams(&opts, scheme.ParameterCodec, GroupVersion).
 		Body(policyReport).
 		Do(ctx).
 		Into(result)
@@ -109,7 +109,7 @@ func (c *policyReports) Update(ctx context.Context, policyReport *v1alpha2.Polic
 		Namespace(c.ns).
 		Resource("policyreports").
 		Name(policyReport.Name).
-		VersionedParams(&opts, scheme.ParameterCodec).
+		SpecificallyVersionedParams(&opts, scheme.ParameterCodec, GroupVersion).
 		Body(policyReport).
 		Do(ctx).
 		Into(result)
@@ -122,6 +122,7 @@ func (c *policyReports) Delete(ctx context.Context, name string, opts v1.DeleteO
 		Namespace(c.ns).
 		Resource("policyreports").
 		Name(name).
+		SpecificallyVersionedParams(&opts, scheme.ParameterCodec, GroupVersion).
 		Body(&opts).
 		Do(ctx).
 		Error()
@@ -136,7 +137,7 @@ func (c *policyReports) DeleteCollection(ctx context.Context, opts v1.DeleteOpti
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("policyreports").
-		VersionedParams(&listOpts, scheme.ParameterCodec).
+		SpecificallyVersionedParams(&listOpts, scheme.ParameterCodec, GroupVersion).
 		Timeout(timeout).
 		Body(&opts).
 		Do(ctx).
@@ -151,7 +152,7 @@ func (c *policyReports) Patch(ctx context.Context, name string, pt types.PatchTy
 		Resource("policyreports").
 		Name(name).
 		SubResource(subresources...).
-		VersionedParams(&opts, scheme.ParameterCodec).
+		SpecificallyVersionedParams(&opts, scheme.ParameterCodec, GroupVersion).
 		Body(data).
 		Do(ctx).
 		Into(result)
