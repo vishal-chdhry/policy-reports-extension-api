@@ -9,6 +9,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/k3s-io/kine/pkg/client"
 	"github.com/kyverno/kyverno/api/policyreport/v1alpha2"
+	"go.uber.org/zap"
 )
 
 type HandlerSetInterface interface {
@@ -19,12 +20,14 @@ type HandlerSetInterface interface {
 }
 
 type handlerSet struct {
+	logger      *zap.SugaredLogger
 	cpolHandler ClusterPolicyReportsInterface
 	polHandler  PolicyReportsInterface
 }
 
-func NewHandlerSet(dbClient client.Client) HandlerSetInterface {
+func NewHandlerSet(dbClient client.Client, logger *zap.SugaredLogger) HandlerSetInterface {
 	return &handlerSet{
+		logger:      logger,
 		cpolHandler: newClusterPolicyHandler(dbClient),
 		polHandler:  newPolicyHandler(dbClient),
 	}
@@ -33,6 +36,7 @@ func NewHandlerSet(dbClient client.Client) HandlerSetInterface {
 func (h *handlerSet) ClusterScopedHandler(ctx context.Context) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
+		h.logger.Infof("ClusterScopedHandler: recieved request method:%s, url:%s, resource:%s", r.Method, r.URL.String(), vars["resource"])
 
 		if vars["resource"] != "clusterpolicyreports" {
 			http.Error(w, "only clusterpolicyreports are supported", http.StatusBadRequest)
@@ -56,6 +60,7 @@ func (h *handlerSet) ClusterScopedHandler(ctx context.Context) func(http.Respons
 		case http.MethodPost:
 			var clusterPolicyReport *v1alpha2.ClusterPolicyReport
 			raw, _ := io.ReadAll(r.Body)
+			h.logger.Info("Body:", string(raw))
 			err := json.Unmarshal(raw, &clusterPolicyReport)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusNotAcceptable)
@@ -85,6 +90,7 @@ func (h *handlerSet) ClusterScopedHandler(ctx context.Context) func(http.Respons
 func (h *handlerSet) ClusterScopedHandlerWithName(ctx context.Context) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
+		h.logger.Infof("ClusterScopedHandlerWithName: recieved request method:%s, url:%s, resource:%s, name:%s", r.Method, r.URL.String(), vars["resource"], vars["name"])
 
 		if vars["resource"] != "clusterpolicyreports" {
 			http.Error(w, "only clusterpolicyreports are supported on this endpoint", http.StatusBadRequest)
@@ -105,9 +111,10 @@ func (h *handlerSet) ClusterScopedHandlerWithName(ctx context.Context) func(http
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-		case http.MethodPut:
+		case http.MethodPost:
 			var clusterPolicyReport *v1alpha2.ClusterPolicyReport
 			raw, _ := io.ReadAll(r.Body)
+			h.logger.Info("Body:", string(raw))
 			err := json.Unmarshal(raw, &clusterPolicyReport)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusNotAcceptable)
@@ -137,6 +144,7 @@ func (h *handlerSet) ClusterScopedHandlerWithName(ctx context.Context) func(http
 func (h *handlerSet) NamespacedHandler(ctx context.Context) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
+		h.logger.Infof("NamespacedHandler: recieved request method:%s, url:%s, resource:%s, namespace:%s", r.Method, r.URL.String(), vars["resource"], vars["namespace"])
 
 		if vars["resource"] != "policyreports" {
 			http.Error(w, "only policyreports are supported on this endpoint", http.StatusBadRequest)
@@ -160,6 +168,7 @@ func (h *handlerSet) NamespacedHandler(ctx context.Context) func(http.ResponseWr
 		case http.MethodPost:
 			var policyReport *v1alpha2.PolicyReport
 			raw, _ := io.ReadAll(r.Body)
+			h.logger.Info("Body:", string(raw))
 			err := json.Unmarshal(raw, &policyReport)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusNotAcceptable)
@@ -189,6 +198,7 @@ func (h *handlerSet) NamespacedHandler(ctx context.Context) func(http.ResponseWr
 func (h *handlerSet) NamespacedHandlerWithName(ctx context.Context) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
+		h.logger.Infof("NamespacedHandlerWithName: recieved request method:%s, url:%s, resource:%s, name:%s, namespace:%s", r.Method, r.URL.String(), vars["resource"], vars["name"], vars["namespace"])
 
 		if vars["resource"] != "policyreports" {
 			http.Error(w, "only policyreports are supported on this endpoint", http.StatusBadRequest)
@@ -209,9 +219,10 @@ func (h *handlerSet) NamespacedHandlerWithName(ctx context.Context) func(http.Re
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-		case http.MethodPut:
+		case http.MethodPost:
 			var policyReport *v1alpha2.PolicyReport
 			raw, _ := io.ReadAll(r.Body)
+			h.logger.Info("Body:", string(raw))
 			err := json.Unmarshal(raw, &policyReport)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusNotAcceptable)
