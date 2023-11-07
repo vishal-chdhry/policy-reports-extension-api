@@ -35,7 +35,7 @@ Build
 
 Build the docker image for the server:
 
-```
+```sh
 make server
 ```
 
@@ -46,7 +46,7 @@ Install
 
 2. Apply the manifest:
 
-```
+```sh
 kubectl apply -f manifest/manifest.yaml
 ```
 
@@ -55,22 +55,153 @@ Usage
 
 Create a new policy report:
 
-```
+```sh
 kubectl create --raw /apis/prext.demo/v1alpha1/namespaces/default/policyreports -f config/testdata/testpolicy.json
+```
+
+Output
+```sh
+{
+    "kind": "PolicyReport",
+    "apiVersion": "prext.demo/v1alpha1",
+    "metadata": {
+      "name": "test",
+      "namespace": "default",
+      "uid": "8f611e66-e398-401d-9624-fd9ec87a72f8",
+      "creationTimestamp": null,
+      "ownerReferences": [
+        {
+          "apiVersion": "v1",
+          "kind": "Pod",
+...
+...
 ```
 
 Get the all policy reports in a namespace:
 
-```
+```sh
 kubectl get --raw /apis/prext.demo/v1alpha1/namespaces/{{NAMESPACE}}/policyreports | jq --args ".[].metadata.name"      
 ```
 
-View a policy report:
+Output: 
+```sh
+{
+    "kind": "PolicyReportList",
+    "apiVersion": "prext.demo/v1alpha1",
+    "metadata": {
+      "resourceVersion": "31622"
+    },
+    "items": [
+      {
+        "kind": "PolicyReport",
+        "apiVersion": "prext.demo/v1alpha1",
+        "metadata": {
+          "name": "image-scan-pod-identity-webhook-6d5f85488d-2vdjn",
+...
+...
 ```
+
+View a policy report:
+```sh
 kubectl get --raw /apis/prext.demo/v1alpha1/namespaces/default/policyreports/test1
 ```
 
-Delete a policy report: 
+Output:
+```sh
+{
+    "kind": "PolicyReport",
+    "apiVersion": "prext.demo/v1alpha1",
+    "metadata": {
+      "name": "image-scan-pod-identity-webhook-6d5f85488d-2vdjn",
+      "namespace": "default",
+      "uid": "87428580-1dbf-4f2c-8320-069c9db00367",
+      "resourceVersion": "125248938",
+      "generation": 19,
+      "creationTimestamp": "2023-10-18T15:33:08Z",
+      "labels": {
+        "kubernetes.io/createdBy": "vulnerability-operator"
+...
+...
 ```
+
+Delete a policy report: 
+```sh
 kubectl delete --raw /apis/prext.demo/v1alpha1/namespaces/default/policyreports/test 
+```
+
+View a cluster policy report: 
+```sh
+kubectl get --raw /apis/prext.demo/v1alpha1/clusterpolicyreports/test1 
+```
+
+Output:
+```sh
+{
+    "kind": "ClusterPolicyReport",
+    "apiVersion": "prext.demo/v1alpha1",
+    "metadata": {
+      "name": "kube-bench",
+      "uid": "ed0d888c-fab5-4597-98f4-d93bbd2a28d6",
+      "resourceVersion": "130199899",
+      "generation": 3,
+      "creationTimestamp": "2023-10-22T00:00:14Z",
+      "managedFields": [
+        {
+          "manager": "policyreport",
+          "operation": "Update",
+          "apiVersion": "prext.demo/v1alpha1",
+          "time": "2023-10-22T00:00:14Z",
+          "fieldsType": "FieldsV1",
+          "fieldsV1": {
+            "f:results": {},
+            "f:summary": {
+              ".": {},
+              "f:error": {},
+              "f:fail": {},
+              "f:pass": {},
+              "f:skip": {},
+              "f:warn": {}
+            }
+          }
+        }
+      ]
+    },
+    "summary": {
+      "pass": 14,
+      "fail": 0,
+      "warn": 2,
+...
+...
+```
+
+Get all cluster policy reports: 
+```sh
+kubectl get --raw /apis/prext.demo/v1alpha1/clusterpolicyreports
+```
+
+Output:
+```sh
+{
+    "kind": "ClusterPolicyReportList",
+    "apiVersion": "prext.demo/v1alpha1",
+    "metadata": {
+      "resourceVersion": "31778"
+    },
+    "items": [
+      {
+        "kind": "ClusterPolicyReport",
+        "apiVersion": "prext.demo/v1alpha1",
+        "metadata": {
+          "name": "kube-bench",
+          "uid": "ed0d888c-fab5-4597-98f4-d93bbd2a28d6",
+          "resourceVersion": "130199899",
+          "generation": 3,
+          "creationTimestamp": "2023-10-22T00:00:14Z",
+          "managedFields": [
+            {
+              "manager": "policyreport",
+              "operation": "Update",
+              "apiVersion": "prext.demo/v1alpha1",
+...
+...
 ```
