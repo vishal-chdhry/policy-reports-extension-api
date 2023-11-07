@@ -5,7 +5,7 @@ go 1.21.1
 require (
 	github.com/gorilla/mux v1.8.0
 	github.com/k3s-io/kine v0.10.3
-	github.com/vishal-chdhry/policy-reports-extension-api/client v0.0.0-20231106134526-a3c39af3078f
+	github.com/vishal-chdhry/policy-reports-extension-api/client v0.0.0-20231107083704-fc1e9bf90625
 	go.uber.org/zap v1.26.0
 	k8s.io/api v0.28.3
 	k8s.io/apimachinery v0.28.3
