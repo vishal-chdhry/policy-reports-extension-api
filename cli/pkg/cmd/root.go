@@ -57,6 +57,9 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&inputfilepath, "file", "f", "", "path of input file")
 
 	rootCmd.AddCommand(getCmd)
+	rootCmd.AddCommand(createCmd)
+	rootCmd.AddCommand(applyCmd)
+	rootCmd.AddCommand(deleteCmd)
 }
 
 func Execute() error {

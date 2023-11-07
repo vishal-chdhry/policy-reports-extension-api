@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/vishal-chdhry/policy-reports-extension-api/client/pkg/v1alpha1"
+	"gopkg.in/yaml.v3"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
@@ -84,4 +85,28 @@ func bytesToInterface(b []byte) map[string]interface{} {
 		panic(err)
 	}
 	return result
+}
+
+func JSONToUnstructured(b []byte) *unstructured.Unstructured {
+	obj := make(map[string]interface{})
+	err := json.Unmarshal(b, &obj)
+	if err != nil {
+		panic(err)
+	}
+
+	return &unstructured.Unstructured{
+		Object: obj,
+	}
+}
+
+func YAMLToUnstructured(b []byte) *unstructured.Unstructured {
+	obj := make(map[string]interface{})
+	err := yaml.Unmarshal(b, &obj)
+	if err != nil {
+		panic(err)
+	}
+
+	return &unstructured.Unstructured{
+		Object: obj,
+	}
 }

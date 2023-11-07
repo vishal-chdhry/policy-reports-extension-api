@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/vishal-chdhry/policy-reports-extension-api/cli/pkg/utils"
 	"github.com/vishal-chdhry/policy-reports-extension-api/client/pkg/v1alpha1"
+	"gopkg.in/yaml.v3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -29,13 +31,22 @@ var getCmd = &cobra.Command{
 		if len(args) == 0 {
 			return fmt.Errorf("not enough arguments to 'get'")
 		}
-		if len(args) > 1 {
+		if len(args) > 2 {
 			return fmt.Errorf("too many arguments to 'get'")
 		}
 		d := newDoer(args[0])
-		rv, err := d.getList(args[0])
-		if err != nil {
-			return err
+		var rv string
+		var err error
+		if len(args) == 1 {
+			rv, err = d.getList(args[0])
+			if err != nil {
+				return err
+			}
+		} else if len(args) == 2 {
+			rv, err = d.get(args[0], args[1])
+			if err != nil {
+				return err
+			}
 		}
 		if watch {
 			return d.watch(args[0], rv)
@@ -68,26 +79,90 @@ func (d doer) getList(resource string) (string, error) {
 		if err != nil {
 			return "", err
 		}
+		if len(output) == 0 {
+			fmt.Fprintln(os.Stdout, "Cluster policy reports in namespace: ", namespace)
+			fmt.Fprintln(os.Stdout, "NAME")
+			for _, v := range cpol.Items {
+				fmt.Fprintln(os.Stdout, v.ObjectMeta.Name)
+			}
+		}
 		unst = utils.ClusterPolicyReportListToUnstructuredList(cpol)
 	} else if utils.IsPolicyReport(resource) {
 		pol, err := d.client.PolicyReports(namespace).List(context.TODO(), metav1.ListOptions{})
 		if err != nil {
 			return "", err
 		}
+		if len(output) == 0 {
+			fmt.Fprintln(os.Stdout, "Policy reports in namespace: ", namespace)
+			fmt.Fprintln(os.Stdout, "NAME")
+			for _, v := range pol.Items {
+				fmt.Fprintln(os.Stdout, v.ObjectMeta.Name)
+			}
+		}
 		unst = utils.PolicyReportListToUnstructuredList(pol)
 	} else {
 		return "", errors.New("unsupported resource")
 	}
 
-	table, err := toTable(unst.UnstructuredContent())
-	if err != nil {
-		return "", err
+	if output == "yaml" {
+		for _, v := range unst.Items {
+			data, err := yaml.Marshal(v.UnstructuredContent())
+			if err != nil {
+				return "", err
+			}
+			fmt.Fprintln(os.Stdout, string(data))
+		}
+	} else if output == "json" {
+		for _, v := range unst.Items {
+			data, err := json.Marshal(v.UnstructuredContent())
+			if err != nil {
+				return "", err
+			}
+			fmt.Fprintln(os.Stdout, string(data))
+		}
+	} else if len(output) > 0 {
+		return "", errors.New("unsupported output format")
 	}
+
 	rv := unst.GetResourceVersion()
-	if err = d.printer.PrintObj(table, os.Stdout); err != nil {
-		return rv, err
+	return rv, nil
+}
+
+func (d doer) get(resource, name string) (string, error) {
+	var unst *unstructured.Unstructured
+	if utils.IsClusterPolicyReport(resource) {
+		cpol, err := d.client.ClusterPolicyReports().Get(context.TODO(), name, metav1.GetOptions{})
+		if err != nil {
+			return "", err
+		}
+		unst = utils.ClusterPolicyReportToUnstructured(cpol)
+	} else if utils.IsPolicyReport(resource) {
+		pol, err := d.client.PolicyReports(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+		if err != nil {
+			return "", err
+		}
+		unst = utils.PolicyReportToUnstructured(pol)
+	} else {
+		return "", errors.New("unsupported resource")
 	}
-	// fmt.Fprint(os.Stdout, table)
+
+	if output == "yaml" {
+		b, err := yaml.Marshal(unst.UnstructuredContent())
+		if err != nil {
+			return "", err
+		}
+		fmt.Fprintln(os.Stdout, string(b))
+	} else if output == "json" {
+		b, err := json.Marshal(unst.UnstructuredContent())
+		if err != nil {
+			return "", err
+		}
+		fmt.Fprintln(os.Stdout, string(b))
+	} else if len(output) > 0 {
+		return "", errors.New("unsupported output format")
+	}
+
+	rv := unst.GetResourceVersion()
 	return rv, nil
 }
 
