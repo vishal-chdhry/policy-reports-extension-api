@@ -1,5 +1,4 @@
-Policy Reports Extension (PRExt)
-===============================================
+# Policy Reports Extension (PRExt)
 
 *Inspired by https://github.com/cmurphy/hns-list*
 
@@ -30,17 +29,21 @@ Why move policy reports outside of etcd?: https://github.com/kyverno/KDP/pull/51
 
 This extension allows us store policy reports outside of etcd.
 
-Build
------
+## Build
 
-Build the docker image for the server:
+Build the kubectl-prext plugin and install it in your GOPATH:
+
+```
+make cli
+```
+
+Build the docker image for server:
 
 ```sh
 make server
 ```
 
-Install
--------
+## Install
 
 1. Install [cert-manager](https://cert-manager.io/docs/installation/)
 
@@ -50,9 +53,9 @@ Install
 kubectl apply -f manifest/manifest.yaml
 ```
 
-Usage
------
+## Usage
 
+### Using Raw API Queries
 Create a new policy report:
 
 ```sh
@@ -204,4 +207,66 @@ Output:
               "apiVersion": "prext.demo/v1alpha1",
 ...
 ...
+```
+
+### Using kubectl plugin
+
+Create a new policy report:
+
+```sh
+kubectl prext create -f config/testdata/testpolicy.json
+
+PolicyReport 'test' in namespace default successfully created.
+```
+
+Get yaml of a policy report
+
+```sh
+kubectl prext get polr test -o yaml
+
+apiVersion: ""
+kind: ""
+metadata:
+    creationTimestamp: null
+    name: test
+    namespace: default
+    ownerReferences:
+        - apiVersion: v1
+          kind: Pod
+          name: test-amutate
+          uid: 6c737f35-260c-4e4f-8516-61a125c9fb78
+    uid: 8f611e66-e398-401d-9624-fd9ec87a72f8
+results:
+    - message: validation rule 'call-aws-signer-extension' passed.
+      policy: validate-images
+      result: pass
+      rule: call-aws-signer-extension
+      scored: true
+      source: kyverno
+...
+...
+```
+
+Get policy reports in a namespace
+```sh
+kubectl prext get polr -n test-ns
+
+Policy reports in namespace: test-ns
+NAME
+image-scan-cp-provider-aws-ee6bece46dbb-85654fc6b4-xpbn5
+image-scan-kyverno-notation-aws-59bb56b89c-wxpcm
+```
+
+Patch a policy report
+```sh
+kubectl prext apply -f config/testdata/testpolicy.json
+
+PolicyReport 'test' in namespace default successfully configured.
+```
+
+Delete a policy report
+```sh
+kubectl prext delete polr test
+
+Successfully deleted  polr :  test
 ```
