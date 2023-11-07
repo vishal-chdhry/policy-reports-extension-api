@@ -96,7 +96,7 @@ func (c *clusterPolicyReports) Create(ctx context.Context, obj *unstructured.Uns
 	err = c.client.Post().
 		Resource("clusterpolicyreports").
 		SpecificallyVersionedParams(&opts, ParameterCodec, GroupVersion).
-		Body(string(body)).
+		Body(body).
 		Do(ctx).
 		Into(result)
 	return result, err
@@ -114,7 +114,7 @@ func (c *clusterPolicyReports) Update(ctx context.Context, obj *unstructured.Uns
 		Resource("clusterpolicyreports").
 		Name(obj.GetName()).
 		SpecificallyVersionedParams(&opts, ParameterCodec, GroupVersion).
-		Body(string(body)).
+		Body(body).
 		Do(ctx).
 		Into(result)
 	return result, err

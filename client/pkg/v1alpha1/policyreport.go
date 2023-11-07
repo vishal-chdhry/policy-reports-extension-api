@@ -102,7 +102,7 @@ func (c *policyReports) Create(ctx context.Context, obj *unstructured.Unstructur
 		Namespace(c.ns).
 		Resource("policyreports").
 		SpecificallyVersionedParams(&opts, ParameterCodec, GroupVersion).
-		Body(string(body)).
+		Body(body).
 		Do(ctx).
 		Into(result)
 	return
@@ -121,7 +121,7 @@ func (c *policyReports) Update(ctx context.Context, obj *unstructured.Unstructur
 		Resource("policyreports").
 		Name(obj.GetName()).
 		SpecificallyVersionedParams(&opts, ParameterCodec, GroupVersion).
-		Body(string(body)).
+		Body(body).
 		Do(ctx).
 		Into(result)
 	return
