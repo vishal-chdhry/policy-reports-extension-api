@@ -5,6 +5,7 @@ import (
 	"time"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	rest "k8s.io/client-go/rest"
@@ -18,14 +19,14 @@ type PolicyReportsGetter interface {
 
 // PolicyReportInterface has methods to work with PolicyReport resources.
 type PolicyReportInterface interface {
-	Create(ctx context.Context, policyReport *PolicyReport, opts v1.CreateOptions) (*PolicyReport, error)
-	Update(ctx context.Context, policyReport *PolicyReport, opts v1.UpdateOptions) (*PolicyReport, error)
+	Create(ctx context.Context, obj *unstructured.Unstructured, opts v1.CreateOptions) (*unstructured.Unstructured, error)
+	Update(ctx context.Context, obj *unstructured.Unstructured, opts v1.UpdateOptions) (*unstructured.Unstructured, error)
 	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
 	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
-	Get(ctx context.Context, name string, opts v1.GetOptions) (*PolicyReport, error)
-	List(ctx context.Context, opts v1.ListOptions) (*PolicyReportList, error)
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*unstructured.Unstructured, error)
+	List(ctx context.Context, opts v1.ListOptions) (*unstructured.UnstructuredList, error)
 	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
-	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *PolicyReport, err error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *unstructured.Unstructured, err error)
 }
 
 // policyReports implements PolicyReportInterface
@@ -35,7 +36,7 @@ type policyReports struct {
 }
 
 // newPolicyReports returns a PolicyReports
-func newPolicyReports(c *DemoPolicyV1alpha2Client, namespace string) *policyReports {
+func newPolicyReports(c *DemoPolicyV1alpha2Client, namespace string) PolicyReportInterface {
 	return &policyReports{
 		client: c.RESTClient(),
 		ns:     namespace,
@@ -43,8 +44,8 @@ func newPolicyReports(c *DemoPolicyV1alpha2Client, namespace string) *policyRepo
 }
 
 // Get takes name of the policyReport, and returns the corresponding policyReport object, and an error if there is any.
-func (c *policyReports) Get(ctx context.Context, name string, options v1.GetOptions) (result *PolicyReport, err error) {
-	result = &PolicyReport{}
+func (c *policyReports) Get(ctx context.Context, name string, options v1.GetOptions) (result *unstructured.Unstructured, err error) {
+	result = &unstructured.Unstructured{}
 	err = c.client.Get().
 		Namespace(c.ns).
 		Resource("policyreports").
@@ -56,12 +57,12 @@ func (c *policyReports) Get(ctx context.Context, name string, options v1.GetOpti
 }
 
 // List takes label and field selectors, and returns the list of PolicyReports that match those selectors.
-func (c *policyReports) List(ctx context.Context, opts v1.ListOptions) (result *PolicyReportList, err error) {
+func (c *policyReports) List(ctx context.Context, opts v1.ListOptions) (result *unstructured.UnstructuredList, err error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
 	}
-	result = &PolicyReportList{}
+	result = &unstructured.UnstructuredList{}
 	err = c.client.Get().
 		Namespace(c.ns).
 		Resource("policyreports").
@@ -88,27 +89,27 @@ func (c *policyReports) Watch(ctx context.Context, opts v1.ListOptions) (watch.I
 }
 
 // Create takes the representation of a policyReport and creates it.  Returns the server's representation of the policyReport, and an error, if there is any.
-func (c *policyReports) Create(ctx context.Context, policyReport *PolicyReport, opts v1.CreateOptions) (result *PolicyReport, err error) {
-	result = &PolicyReport{}
+func (c *policyReports) Create(ctx context.Context, obj *unstructured.Unstructured, opts v1.CreateOptions) (result *unstructured.Unstructured, err error) {
+	result = &unstructured.Unstructured{}
 	err = c.client.Post().
 		Namespace(c.ns).
 		Resource("policyreports").
 		SpecificallyVersionedParams(&opts, ParameterCodec, GroupVersion).
-		Body(policyReport).
+		Body(obj.UnstructuredContent()).
 		Do(ctx).
 		Into(result)
 	return
 }
 
 // Update takes the representation of a policyReport and updates it. Returns the server's representation of the policyReport, and an error, if there is any.
-func (c *policyReports) Update(ctx context.Context, policyReport *PolicyReport, opts v1.UpdateOptions) (result *PolicyReport, err error) {
-	result = &PolicyReport{}
+func (c *policyReports) Update(ctx context.Context, obj *unstructured.Unstructured, opts v1.UpdateOptions) (result *unstructured.Unstructured, err error) {
+	result = &unstructured.Unstructured{}
 	err = c.client.Put().
 		Namespace(c.ns).
 		Resource("policyreports").
-		Name(policyReport.Name).
+		Name(obj.GetName()).
 		SpecificallyVersionedParams(&opts, ParameterCodec, GroupVersion).
-		Body(policyReport).
+		Body(obj.UnstructuredContent()).
 		Do(ctx).
 		Into(result)
 	return
@@ -143,8 +144,8 @@ func (c *policyReports) DeleteCollection(ctx context.Context, opts v1.DeleteOpti
 }
 
 // Patch applies the patch and returns the patched policyReport.
-func (c *policyReports) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *PolicyReport, err error) {
-	result = &PolicyReport{}
+func (c *policyReports) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *unstructured.Unstructured, err error) {
+	result = &unstructured.Unstructured{}
 	err = c.client.Patch(pt).
 		Namespace(c.ns).
 		Resource("policyreports").

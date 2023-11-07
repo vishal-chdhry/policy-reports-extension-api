@@ -5,6 +5,7 @@ import (
 	"time"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	rest "k8s.io/client-go/rest"
@@ -18,14 +19,14 @@ type ClusterPolicyReportsGetter interface {
 
 // ClusterPolicyReportInterface has methods to work with ClusterPolicyReport resources.
 type ClusterPolicyReportInterface interface {
-	Create(ctx context.Context, clusterPolicyReport *ClusterPolicyReport, opts v1.CreateOptions) (*ClusterPolicyReport, error)
-	Update(ctx context.Context, clusterPolicyReport *ClusterPolicyReport, opts v1.UpdateOptions) (*ClusterPolicyReport, error)
+	Create(ctx context.Context, obj *unstructured.Unstructured, opts v1.CreateOptions) (*unstructured.Unstructured, error)
+	Update(ctx context.Context, obj *unstructured.Unstructured, opts v1.UpdateOptions) (*unstructured.Unstructured, error)
 	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
 	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
-	Get(ctx context.Context, name string, opts v1.GetOptions) (*ClusterPolicyReport, error)
-	List(ctx context.Context, opts v1.ListOptions) (*ClusterPolicyReportList, error)
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*unstructured.Unstructured, error)
+	List(ctx context.Context, opts v1.ListOptions) (*unstructured.UnstructuredList, error)
 	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
-	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *ClusterPolicyReport, err error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *unstructured.Unstructured, err error)
 }
 
 // clusterPolicyReports implements ClusterPolicyReportInterface
@@ -34,38 +35,38 @@ type clusterPolicyReports struct {
 }
 
 // newClusterPolicyReports returns a ClusterPolicyReports
-func newClusterPolicyReports(c *DemoPolicyV1alpha2Client) *clusterPolicyReports {
+func newClusterPolicyReports(c *DemoPolicyV1alpha2Client) ClusterPolicyReportInterface {
 	return &clusterPolicyReports{
 		client: c.RESTClient(),
 	}
 }
 
 // Get takes name of the clusterPolicyReport, and returns the corresponding clusterPolicyReport object, and an error if there is any.
-func (c *clusterPolicyReports) Get(ctx context.Context, name string, opts v1.GetOptions) (result *ClusterPolicyReport, err error) {
-	result = &ClusterPolicyReport{}
-	err = c.client.Get().
+func (c *clusterPolicyReports) Get(ctx context.Context, name string, opts v1.GetOptions) (*unstructured.Unstructured, error) {
+	result := &unstructured.Unstructured{}
+	err := c.client.Get().
 		Resource("clusterpolicyreports").
 		Name(name).
 		SpecificallyVersionedParams(&opts, ParameterCodec, GroupVersion).
 		Do(ctx).
 		Into(result)
-	return
+	return result, err
 }
 
 // List takes label and field selectors, and returns the list of ClusterPolicyReports that match those selectors.
-func (c *clusterPolicyReports) List(ctx context.Context, opts v1.ListOptions) (result *ClusterPolicyReportList, err error) {
+func (c *clusterPolicyReports) List(ctx context.Context, opts v1.ListOptions) (*unstructured.UnstructuredList, error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
 	}
-	result = &ClusterPolicyReportList{}
-	err = c.client.Get().
+	result := &unstructured.UnstructuredList{}
+	err := c.client.Get().
 		Resource("clusterpolicyreports").
 		SpecificallyVersionedParams(&opts, ParameterCodec, GroupVersion).
 		Timeout(timeout).
 		Do(ctx).
 		Into(result)
-	return
+	return result, err
 }
 
 // Watch returns a watch.Interface that watches the requested clusterPolicyReports.
@@ -83,28 +84,28 @@ func (c *clusterPolicyReports) Watch(ctx context.Context, opts v1.ListOptions) (
 }
 
 // Create takes the representation of a clusterPolicyReport and creates it.  Returns the server's representation of the clusterPolicyReport, and an error, if there is any.
-func (c *clusterPolicyReports) Create(ctx context.Context, clusterPolicyReport *ClusterPolicyReport, opts v1.CreateOptions) (result *ClusterPolicyReport, err error) {
-	result = &ClusterPolicyReport{}
-	err = c.client.Post().
+func (c *clusterPolicyReports) Create(ctx context.Context, obj *unstructured.Unstructured, opts v1.CreateOptions) (*unstructured.Unstructured, error) {
+	result := &unstructured.Unstructured{}
+	err := c.client.Post().
 		Resource("clusterpolicyreports").
 		SpecificallyVersionedParams(&opts, ParameterCodec, GroupVersion).
-		Body(clusterPolicyReport).
+		Body(obj.UnstructuredContent()).
 		Do(ctx).
 		Into(result)
-	return
+	return result, err
 }
 
 // Update takes the representation of a clusterPolicyReport and updates it. Returns the server's representation of the clusterPolicyReport, and an error, if there is any.
-func (c *clusterPolicyReports) Update(ctx context.Context, clusterPolicyReport *ClusterPolicyReport, opts v1.UpdateOptions) (result *ClusterPolicyReport, err error) {
-	result = &ClusterPolicyReport{}
-	err = c.client.Put().
+func (c *clusterPolicyReports) Update(ctx context.Context, obj *unstructured.Unstructured, opts v1.UpdateOptions) (*unstructured.Unstructured, error) {
+	result := &unstructured.Unstructured{}
+	err := c.client.Put().
 		Resource("clusterpolicyreports").
-		Name(clusterPolicyReport.Name).
+		Name(obj.GetName()).
 		SpecificallyVersionedParams(&opts, ParameterCodec, GroupVersion).
-		Body(clusterPolicyReport).
+		Body(obj.UnstructuredContent()).
 		Do(ctx).
 		Into(result)
-	return
+	return result, err
 }
 
 // Delete takes name of the clusterPolicyReport and deletes it. Returns an error if one occurs.
@@ -134,9 +135,9 @@ func (c *clusterPolicyReports) DeleteCollection(ctx context.Context, opts v1.Del
 }
 
 // Patch applies the patch and returns the patched clusterPolicyReport.
-func (c *clusterPolicyReports) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *ClusterPolicyReport, err error) {
-	result = &ClusterPolicyReport{}
-	err = c.client.Patch(pt).
+func (c *clusterPolicyReports) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (*unstructured.Unstructured, error) {
+	result := &unstructured.Unstructured{}
+	err := c.client.Patch(pt).
 		Resource("clusterpolicyreports").
 		Name(name).
 		SubResource(subresources...).
@@ -144,5 +145,5 @@ func (c *clusterPolicyReports) Patch(ctx context.Context, name string, pt types.
 		Body(data).
 		Do(ctx).
 		Into(result)
-	return
+	return result, err
 }
