@@ -91,11 +91,15 @@ func (c *policyReports) Watch(ctx context.Context, opts v1.ListOptions) (watch.I
 // Create takes the representation of a policyReport and creates it.  Returns the server's representation of the policyReport, and an error, if there is any.
 func (c *policyReports) Create(ctx context.Context, obj *unstructured.Unstructured, opts v1.CreateOptions) (result *unstructured.Unstructured, err error) {
 	result = &unstructured.Unstructured{}
+	body, err := obj.MarshalJSON()
+	if err != nil {
+		return nil, err
+	}
 	err = c.client.Post().
 		Namespace(c.ns).
 		Resource("policyreports").
 		SpecificallyVersionedParams(&opts, ParameterCodec, GroupVersion).
-		Body(obj.UnstructuredContent()).
+		Body(string(body)).
 		Do(ctx).
 		Into(result)
 	return
@@ -104,12 +108,16 @@ func (c *policyReports) Create(ctx context.Context, obj *unstructured.Unstructur
 // Update takes the representation of a policyReport and updates it. Returns the server's representation of the policyReport, and an error, if there is any.
 func (c *policyReports) Update(ctx context.Context, obj *unstructured.Unstructured, opts v1.UpdateOptions) (result *unstructured.Unstructured, err error) {
 	result = &unstructured.Unstructured{}
+	body, err := obj.MarshalJSON()
+	if err != nil {
+		return nil, err
+	}
 	err = c.client.Put().
 		Namespace(c.ns).
 		Resource("policyreports").
 		Name(obj.GetName()).
 		SpecificallyVersionedParams(&opts, ParameterCodec, GroupVersion).
-		Body(obj.UnstructuredContent()).
+		Body(string(body)).
 		Do(ctx).
 		Into(result)
 	return

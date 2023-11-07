@@ -86,10 +86,14 @@ func (c *clusterPolicyReports) Watch(ctx context.Context, opts v1.ListOptions) (
 // Create takes the representation of a clusterPolicyReport and creates it.  Returns the server's representation of the clusterPolicyReport, and an error, if there is any.
 func (c *clusterPolicyReports) Create(ctx context.Context, obj *unstructured.Unstructured, opts v1.CreateOptions) (*unstructured.Unstructured, error) {
 	result := &unstructured.Unstructured{}
-	err := c.client.Post().
+	body, err := obj.MarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	err = c.client.Post().
 		Resource("clusterpolicyreports").
 		SpecificallyVersionedParams(&opts, ParameterCodec, GroupVersion).
-		Body(obj.UnstructuredContent()).
+		Body(string(body)).
 		Do(ctx).
 		Into(result)
 	return result, err
@@ -98,11 +102,15 @@ func (c *clusterPolicyReports) Create(ctx context.Context, obj *unstructured.Uns
 // Update takes the representation of a clusterPolicyReport and updates it. Returns the server's representation of the clusterPolicyReport, and an error, if there is any.
 func (c *clusterPolicyReports) Update(ctx context.Context, obj *unstructured.Unstructured, opts v1.UpdateOptions) (*unstructured.Unstructured, error) {
 	result := &unstructured.Unstructured{}
-	err := c.client.Put().
+	body, err := obj.MarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	err = c.client.Put().
 		Resource("clusterpolicyreports").
 		Name(obj.GetName()).
 		SpecificallyVersionedParams(&opts, ParameterCodec, GroupVersion).
-		Body(obj.UnstructuredContent()).
+		Body(string(body)).
 		Do(ctx).
 		Into(result)
 	return result, err
