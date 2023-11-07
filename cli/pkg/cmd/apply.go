@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -26,7 +25,7 @@ var applyCmd = &cobra.Command{
 		if len(inputfilepath) == 0 {
 			return fmt.Errorf("input file path is required to 'create'")
 		}
-		d := newApplyDoer(args[0])
+		d := newApplyDoer()
 		var err error
 		err = d.apply()
 		if err != nil {
@@ -41,7 +40,7 @@ type applyDoer struct {
 	printer printers.ResourcePrinter
 }
 
-func newApplyDoer(resource string) applyDoer {
+func newApplyDoer() applyDoer {
 	printOpts := printers.PrintOptions{WithNamespace: true}
 	return applyDoer{
 		client:  client,
@@ -65,27 +64,13 @@ func (d applyDoer) apply() error {
 		return errors.New("unsupported file type")
 	}
 
-	polb, err := json.Marshal(unst.UnstructuredContent())
-	if err != nil {
-		return err
-	}
 	if unst.GetKind() == "ClusterPolicyReport" {
-		var clusterPolicyReport *v1alpha1.ClusterPolicyReport
-		err := json.Unmarshal(polb, clusterPolicyReport)
-		if err != nil {
-			return err
-		}
-		_, err = d.client.ClusterPolicyReports().Update(context.TODO(), clusterPolicyReport, metav1.UpdateOptions{})
+		_, err = d.client.ClusterPolicyReports().Update(context.TODO(), unst, metav1.UpdateOptions{})
 		if err != nil {
 			return err
 		}
 	} else if unst.GetKind() == "PolicyReport" {
-		var policyReport *v1alpha1.PolicyReport
-		err := json.Unmarshal(polb, policyReport)
-		if err != nil {
-			return err
-		}
-		_, err = d.client.PolicyReports(namespace).Update(context.TODO(), policyReport, metav1.UpdateOptions{})
+		_, err = d.client.PolicyReports(namespace).Update(context.TODO(), unst, metav1.UpdateOptions{})
 		if err != nil {
 			return err
 		}
@@ -94,9 +79,9 @@ func (d applyDoer) apply() error {
 	}
 
 	if len(unst.GetNamespace()) > 0 {
-		fmt.Fprintln(os.Stdout, unst.GetKind(), " '", unst.GetName(), "' in namespace ", unst.GetNamespace(), " successfully configured.")
+		fmt.Fprintln(os.Stdout, unst.GetKind(), "'"+unst.GetName()+"'", "in namespace", unst.GetNamespace(), "successfully configured.")
 	} else {
-		fmt.Fprintln(os.Stdout, unst.GetKind(), " '", unst.GetName(), "' successfully configured.")
+		fmt.Fprintln(os.Stdout, unst.GetKind(), "'"+unst.GetName()+"'", "successfully configured.")
 	}
 	return nil
 }

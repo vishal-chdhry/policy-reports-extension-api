@@ -2,11 +2,11 @@ package cmd
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"github.com/pkg/errors"
 
 	"github.com/spf13/cobra"
 	"github.com/vishal-chdhry/policy-reports-extension-api/cli/pkg/utils"
@@ -26,7 +26,7 @@ var createCmd = &cobra.Command{
 		if len(inputfilepath) == 0 {
 			return fmt.Errorf("input file path is required to 'create'")
 		}
-		d := newCreateDoer(args[0])
+		d := newCreateDoer()
 		var err error
 		err = d.create()
 		if err != nil {
@@ -41,7 +41,7 @@ type createDoer struct {
 	printer printers.ResourcePrinter
 }
 
-func newCreateDoer(resource string) createDoer {
+func newCreateDoer() createDoer {
 	printOpts := printers.PrintOptions{WithNamespace: true}
 	return createDoer{
 		client:  client,
@@ -53,7 +53,7 @@ func (d createDoer) create() error {
 	var unst *unstructured.Unstructured
 	b, err := os.ReadFile(inputfilepath)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to read file path: "+inputfilepath)
 	}
 
 	switch filepath.Ext(inputfilepath) {
@@ -65,38 +65,24 @@ func (d createDoer) create() error {
 		return errors.New("unsupported file type")
 	}
 
-	polb, err := json.Marshal(unst.UnstructuredContent())
-	if err != nil {
-		return err
-	}
 	if unst.GetKind() == "ClusterPolicyReport" {
-		var clusterPolicyReport *v1alpha1.ClusterPolicyReport
-		err := json.Unmarshal(polb, clusterPolicyReport)
+		_, err = d.client.ClusterPolicyReports().Create(context.TODO(), unst, metav1.CreateOptions{})
 		if err != nil {
-			return err
-		}
-		_, err = d.client.ClusterPolicyReports().Create(context.TODO(), clusterPolicyReport, metav1.CreateOptions{})
-		if err != nil {
-			return err
+			return errors.Wrap(err, "failed to create cluster policy report")
 		}
 	} else if unst.GetKind() == "PolicyReport" {
-		var policyReport *v1alpha1.PolicyReport
-		err := json.Unmarshal(polb, policyReport)
+		_, err = d.client.PolicyReports(namespace).Create(context.TODO(), unst, metav1.CreateOptions{})
 		if err != nil {
-			return err
-		}
-		_, err = d.client.PolicyReports(namespace).Create(context.TODO(), policyReport, metav1.CreateOptions{})
-		if err != nil {
-			return err
+			return errors.Wrap(err, "failed to create policy report")
 		}
 	} else {
 		return errors.New("unsupported resource")
 	}
 
 	if len(unst.GetNamespace()) > 0 {
-		fmt.Fprintln(os.Stdout, unst.GetKind(), " '", unst.GetName(), "' in namespace ", unst.GetNamespace(), " successfully created.")
+		fmt.Fprintln(os.Stdout, unst.GetKind(), "'"+unst.GetName()+"'", "in namespace", unst.GetNamespace(), "successfully created.")
 	} else {
-		fmt.Fprintln(os.Stdout, unst.GetKind(), " '", unst.GetName(), "' successfully created.")
+		fmt.Fprintln(os.Stdout, unst.GetKind(), "'"+unst.GetName()+"'", "successfully created.")
 	}
 	return nil
 }

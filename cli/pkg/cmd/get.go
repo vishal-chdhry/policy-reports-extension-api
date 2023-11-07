@@ -74,32 +74,31 @@ func newDoer(resource string) doer {
 
 func (d doer) getList(resource string) (string, error) {
 	var unst *unstructured.UnstructuredList
+	var err error
 	if utils.IsClusterPolicyReport(resource) {
-		cpol, err := d.client.ClusterPolicyReports().List(context.TODO(), metav1.ListOptions{})
+		unst, err = d.client.ClusterPolicyReports().List(context.TODO(), metav1.ListOptions{})
 		if err != nil {
 			return "", err
 		}
 		if len(output) == 0 {
-			fmt.Fprintln(os.Stdout, "Cluster policy reports in namespace: ", namespace)
+			fmt.Fprintln(os.Stdout, "Cluster policy reports in namespace:", namespace)
 			fmt.Fprintln(os.Stdout, "NAME")
-			for _, v := range cpol.Items {
-				fmt.Fprintln(os.Stdout, v.ObjectMeta.Name)
+			for _, v := range unst.Items {
+				fmt.Fprintln(os.Stdout, v.GetName())
 			}
 		}
-		unst = utils.ClusterPolicyReportListToUnstructuredList(cpol)
 	} else if utils.IsPolicyReport(resource) {
-		pol, err := d.client.PolicyReports(namespace).List(context.TODO(), metav1.ListOptions{})
+		unst, err = d.client.PolicyReports(namespace).List(context.TODO(), metav1.ListOptions{})
 		if err != nil {
 			return "", err
 		}
 		if len(output) == 0 {
-			fmt.Fprintln(os.Stdout, "Policy reports in namespace: ", namespace)
+			fmt.Fprintln(os.Stdout, "Policy reports in namespace:", namespace)
 			fmt.Fprintln(os.Stdout, "NAME")
-			for _, v := range pol.Items {
-				fmt.Fprintln(os.Stdout, v.ObjectMeta.Name)
+			for _, v := range unst.Items {
+				fmt.Fprintln(os.Stdout, v.GetName())
 			}
 		}
-		unst = utils.PolicyReportListToUnstructuredList(pol)
 	} else {
 		return "", errors.New("unsupported resource")
 	}
@@ -130,18 +129,17 @@ func (d doer) getList(resource string) (string, error) {
 
 func (d doer) get(resource, name string) (string, error) {
 	var unst *unstructured.Unstructured
+	var err error
 	if utils.IsClusterPolicyReport(resource) {
-		cpol, err := d.client.ClusterPolicyReports().Get(context.TODO(), name, metav1.GetOptions{})
+		unst, err = d.client.ClusterPolicyReports().Get(context.TODO(), name, metav1.GetOptions{})
 		if err != nil {
 			return "", err
 		}
-		unst = utils.ClusterPolicyReportToUnstructured(cpol)
 	} else if utils.IsPolicyReport(resource) {
-		pol, err := d.client.PolicyReports(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+		unst, err = d.client.PolicyReports(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 		if err != nil {
 			return "", err
 		}
-		unst = utils.PolicyReportToUnstructured(pol)
 	} else {
 		return "", errors.New("unsupported resource")
 	}
