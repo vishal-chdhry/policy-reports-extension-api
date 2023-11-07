@@ -2,8 +2,10 @@ package v1alpha1
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
+	"github.com/pkg/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	types "k8s.io/apimachinery/pkg/types"
@@ -91,9 +93,10 @@ func (c *policyReports) Watch(ctx context.Context, opts v1.ListOptions) (watch.I
 // Create takes the representation of a policyReport and creates it.  Returns the server's representation of the policyReport, and an error, if there is any.
 func (c *policyReports) Create(ctx context.Context, obj *unstructured.Unstructured, opts v1.CreateOptions) (result *unstructured.Unstructured, err error) {
 	result = &unstructured.Unstructured{}
-	body, err := obj.MarshalJSON()
+	intr := obj.UnstructuredContent()
+	body, err := json.Marshal(intr)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "failed to get body")
 	}
 	err = c.client.Post().
 		Namespace(c.ns).
@@ -108,9 +111,10 @@ func (c *policyReports) Create(ctx context.Context, obj *unstructured.Unstructur
 // Update takes the representation of a policyReport and updates it. Returns the server's representation of the policyReport, and an error, if there is any.
 func (c *policyReports) Update(ctx context.Context, obj *unstructured.Unstructured, opts v1.UpdateOptions) (result *unstructured.Unstructured, err error) {
 	result = &unstructured.Unstructured{}
-	body, err := obj.MarshalJSON()
+	intr := obj.UnstructuredContent()
+	body, err := json.Marshal(intr)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "failed to get body")
 	}
 	err = c.client.Put().
 		Namespace(c.ns).

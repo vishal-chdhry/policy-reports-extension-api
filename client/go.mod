@@ -3,6 +3,7 @@ module github.com/vishal-chdhry/policy-reports-extension-api/client
 go 1.21.1
 
 require (
+	github.com/pkg/errors v0.9.1
 	k8s.io/api v0.27.1
 	k8s.io/apimachinery v0.27.1
 	k8s.io/client-go v0.27.1

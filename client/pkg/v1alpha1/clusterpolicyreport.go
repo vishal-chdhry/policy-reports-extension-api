@@ -2,8 +2,10 @@ package v1alpha1
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
+	"github.com/pkg/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	types "k8s.io/apimachinery/pkg/types"
@@ -86,9 +88,10 @@ func (c *clusterPolicyReports) Watch(ctx context.Context, opts v1.ListOptions) (
 // Create takes the representation of a clusterPolicyReport and creates it.  Returns the server's representation of the clusterPolicyReport, and an error, if there is any.
 func (c *clusterPolicyReports) Create(ctx context.Context, obj *unstructured.Unstructured, opts v1.CreateOptions) (*unstructured.Unstructured, error) {
 	result := &unstructured.Unstructured{}
-	body, err := obj.MarshalJSON()
+	intr := obj.UnstructuredContent()
+	body, err := json.Marshal(intr)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "failed to get body")
 	}
 	err = c.client.Post().
 		Resource("clusterpolicyreports").
@@ -102,9 +105,10 @@ func (c *clusterPolicyReports) Create(ctx context.Context, obj *unstructured.Uns
 // Update takes the representation of a clusterPolicyReport and updates it. Returns the server's representation of the clusterPolicyReport, and an error, if there is any.
 func (c *clusterPolicyReports) Update(ctx context.Context, obj *unstructured.Unstructured, opts v1.UpdateOptions) (*unstructured.Unstructured, error) {
 	result := &unstructured.Unstructured{}
-	body, err := obj.MarshalJSON()
+	intr := obj.UnstructuredContent()
+	body, err := json.Marshal(intr)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "failed to get body")
 	}
 	err = c.client.Put().
 		Resource("clusterpolicyreports").
